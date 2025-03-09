@@ -1,0 +1,12 @@
+CREATE fileOutput.txt;
+DATABASES;
+
+CREATE TABLE customer(
+    id INT,
+    name TEXT,
+    address TEXT
+);
+TABLES;
+
+INSERT INTO customer (na me,add ress,id)VAL UES (xin yi ,kul ai,1);
+INSERT INTO customer (na me,add ress,id)VAL UES (tommy ,kuala lumpur,2);
