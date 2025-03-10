@@ -2,8 +2,138 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <sstream>
 #include <variant>
 using namespace std;
+
+int main(){
+    int num;
+    string target ="VALUES(";
+    
+    vector <string> word ={"customer",
+                            "(na",
+                            "me,add",
+                            "ress,id)VAL",
+                            "UES",
+                            "(xin",
+                            "yi",
+                            ",kuala",
+                            "lumpur,1);"};
+
+    string plus = word[0];
+    vector <string> result;
+
+    for (int i=0; i<word.size(); i++){
+        if(plus.find(target)!= string::npos){
+
+            size_t start = plus.find("VALUES(") + 7;
+            string values = plus.substr(start);
+            values = values.substr(0, values.size());
+            // cout << values<< " values";
+            num = i;
+            result.push_back(values);
+            break;
+        }
+        else{
+            plus+=word[i];
+        }
+
+    }
+
+    for(num; num<word.size(); num++){
+
+        if(num == word.size() -1){
+            string w = word[ word.size() -1];
+
+            size_t end = w.find(");");
+            string values = w.substr(0, end);
+            values = values.substr(0, values.size());
+            result.push_back(values);
+
+        }
+        else{
+            result.push_back(word[num]);
+        }
+        
+    }
+
+    for(int i =0; i<result.size(); i++){
+        cout << result[i]<< endl;
+    }
+
+}
+
+vector<string> splitString(const string& str, char delimiter) {
+    vector<string> result;
+    stringstream ss(str);
+    string token;
+
+    while (getline(ss, token, delimiter)) {
+        if (!result.empty()) {
+            token = "," + token;  // Add back the delimiter except for the first element
+        }
+        result.push_back(token);
+    }
+
+    return result;
+}
+
+int main() {
+    string c, previous_c,r,plus ;
+    vector<string> abc;
+    // string vecc = "xinyi,kualalumpur,1";
+    
+    vector<string> words = {"xin","yi",",kuala","lumpur,1"};
+    vector<string> vec = {"xinyi",",kualalumpur",",1"};
+
+    string result =words[0];
+    bool same=false;
+
+   
+    
+    for(int i=0; i<words.size();i++){
+        for(int j=0;j<vec.size();j++){
+
+            if(result.find(vec[j])!= string::npos){
+                if(!same&& !c.empty()){
+                    int s = abc.size();
+                    if(c!= previous_c){
+                        abc.push_back(c);
+                        previous_c =c;
+                        c.clear();
+                    }
+                    
+                }
+                result.clear();
+                result = words[i];
+            }
+
+            
+            else{
+                if (i < words.size() - 1){
+                    result+=words[i+1];
+                    c= words[i]+ " "+words[i+1];
+                   
+                }
+                same =false;
+                
+            }
+        }
+    }
+
+    for(int i=0;i<abc.size();i++){
+        r+=abc[i];
+    }
+
+    // cout<<r;
+
+    
+}
+
+
+
+    
+
 
 // int main() {
 //     std::vector<std::string> cor_att = {"id", "name", "address"}; // 正确顺序
@@ -69,29 +199,29 @@ using namespace std;
 // }
 
 
-int main() {
-    std::vector<std::string> a = {"abc", "123", "1"};
-    std::vector<std::variant<int, std::string>> result;
+// int main() {
+//     std::vector<std::string> a = {"abc", "123", "1"};
+//     std::vector<std::variant<int, std::string>> result;
 
-    for (int i = 0; i < a.size(); i++) {
-        if (i % 2 == 0) {
-            result.push_back(a[i]);  // 直接存 string
-        } else {
-            try {
-                result.push_back(std::stoi(a[i]));  // 转换 string -> int
-            } catch (const std::exception& e) {
-                std::cerr << "Error converting '" << a[i] << "' to int: " << e.what() << std::endl;
-            }
-        }
-    }
+//     for (int i = 0; i < a.size(); i++) {
+//         if (i % 2 == 0) {
+//             result.push_back(a[i]);  // 直接存 string
+//         } else {
+//             try {
+//                 result.push_back(std::stoi(a[i]));  // 转换 string -> int
+//             } catch (const std::exception& e) {
+//                 std::cerr << "Error converting '" << a[i] << "' to int: " << e.what() << std::endl;
+//             }
+//         }
+//     }
 
-    // 输出结果
-    for (const auto& item : result) {
-        std::visit([](const auto& value) { std::cout << value << " "; }, item);
-    }
+//     // 输出结果
+//     for (const auto& item : result) {
+//         std::visit([](const auto& value) { std::cout << value << " "; }, item);
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
 
 // int main() {
