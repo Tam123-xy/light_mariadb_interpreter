@@ -8,12 +8,8 @@ CREATE TABLE customer(
 );
 TABLES;
 
-CREATE TABLE student(
-    id INT,
-    name TEXT,
-    address TEXT
-);
-TABLES;
-
 INSERT INTO customer (na me,add ress,id)VAL UES (xin yi ,kulai,1);
 INSERT INTO customer (na me,add ress,id)VAL UES (tommy ,kualalumpur,2);
+
+SELECT* FROM student;
+SELECT COUNT(*) FROM customer;

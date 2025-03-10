@@ -28,7 +28,7 @@ int main() {
     bool create_table= true;
     bool datatype= false;
     bool insert = true;
-    string tableName, file_outputName, type, insert_value,insert_table;
+    string tableName, file_outputName, type, insert_value,insert_table,select_table ;
     string insert_into;
    
     // Detect file mdb 
@@ -137,7 +137,6 @@ int main() {
                                         datatype = false;
                                     }
                                 }
-
                             }
 
                             else if(create_table == false){
@@ -224,12 +223,37 @@ int main() {
                             cout<<"Error, "<< insert_table << " table dosen't exit. Please check your INSERT INTO sql command"<< endl;
                         }
                     }
-                }
+
+                    else if (word[i] == "SELECT*" || (word[i] == "SELECT" && word[i+1] == "*")){
+                        j=0;
+                        for (j=i+1 ; j<word.size(); j++){
+                            if(word[j] == "FROM"){
+                                select_table = word[j+1];
+                                break;
+                            }
+                        }
+
+                        size_t pos = select_table.find(';');
+                        if (pos != string::npos) {
+                            select_table.erase(pos, 1); // Erase one character at the found position
+                        }
+
+                        // Check is the table created
+                        if(select_table == get<string>(table[0])){
+                            print_table(table,attribute);
+                        }
+
+                        else{
+                            cout << select_table << " table doesn't exit. Please check your SELECT* sql command.";
+                        }
+                    }
             }
-            print_table(table,attribute);
         }
     }
+
+}
     return 0;
+
 }
 
 // Function of printing the table
