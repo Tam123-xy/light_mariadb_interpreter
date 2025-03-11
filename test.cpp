@@ -282,3 +282,22 @@ int main() {
 
 //     return 0;
 // }
+
+for (size_t j = 0; j < update.length(); j++) {
+
+    if (update[j] == '=' && repeat_equal_sign == true) {
+        final_sql += "==";  
+    } 
+
+    else if(update[j] == '=' && repeat_equal_sign == false){
+        final_sql += update[j];
+        repeat_equal_sign = true;
+
+    }
+
+    else{
+        final_sql += update[j];  
+    }
+}
+
+cout << final_sql << endl;

@@ -12,6 +12,11 @@ namespace fs = std::filesystem;
 // Function prototypes
 void print_table(const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute);
 vector<string> f_insert(const string insert_into, const string cond_start,const string cond_end, const int num);
+string get_table_name(const vector<string> word, const size_t i);
+int total_count(const vector<variant<string, vector<variant<int, string>>>>& table);
+string full_sql_command(const vector<string> word, const size_t i);
+string f_update(const string update_sql, const string cond_start,const string cond_end, const int num);
+
 
 int main() {
     vector<variant<string, vector<variant<int, string>>>> table;
@@ -28,8 +33,10 @@ int main() {
     bool create_table= true;
     bool datatype= false;
     bool insert = true;
-    string tableName, file_outputName, type, insert_value,insert_table,select_table ;
-    string insert_into;
+    string tableName, file_outputName, type, insert_value,insert_table,select_table,count_table, update_table ;
+    string insert_into, update;
+    bool repeat_equal_sign = false;
+    string final_sql;
    
     // Detect file mdb 
     for (const auto& entry : fs::directory_iterator(path)) {
@@ -147,19 +154,9 @@ int main() {
 
                     // Handle INSERT INTO
                     else if (word[i] == "INSERT" && word[i+1]== "INTO"){
-                        j=0;
 
                         // Obtain INSERT INTO sql command
-                        for (j=i+2; j<word.size(); j++){
-                            if (insert == true){
-                                insert_into+=word[j];
-
-                                if (word[j].find(";") != string::npos) {
-                                    insert = false;
-                                }
-                            }
-                        }
-                        insert = true;
+                        insert_into = full_sql_command(word,i+2);
 
                         // Obtain table name
                         for (char c : insert_into) {
@@ -225,18 +222,8 @@ int main() {
                     }
 
                     else if (word[i] == "SELECT*" || (word[i] == "SELECT" && word[i+1] == "*")){
-                        j=0;
-                        for (j=i+1 ; j<word.size(); j++){
-                            if(word[j] == "FROM"){
-                                select_table = word[j+1];
-                                break;
-                            }
-                        }
 
-                        size_t pos = select_table.find(';');
-                        if (pos != string::npos) {
-                            select_table.erase(pos, 1); // Erase one character at the found position
-                        }
+                        select_table = get_table_name(word,i);
 
                         // Check is the table created
                         if(select_table == get<string>(table[0])){
@@ -245,6 +232,73 @@ int main() {
 
                         else{
                             cout << select_table << " table doesn't exit. Please check your SELECT* sql command.";
+                        }
+                    }
+
+                    else if (word[i] == "SELECT" && word[i+1] == "COUNT(*)"){
+
+                        count_table = get_table_name(word,i+2);
+
+                        if(count_table == get<string>(table[0])){
+                            int num_count = total_count(table);
+
+                            cout << "Total row of data from table " << count_table << " is " << num_count<< "."<< endl;
+                        }
+
+                        else{
+                            cout << count_table << " table doesn't exit. Please check your SELECT(*) COUNT sql command.";
+                        }
+                    }
+
+                    else if (word[i] == "UPDATE"){
+
+                        update_table = word[i+1];
+
+                        // Check is the table created
+                        if(update_table == get<string>(table[0])){
+                            
+                            update = full_sql_command(word,i+2);
+
+                            for (size_t j = 0; j < update.size(); j++) {
+
+                                if (update[j] == '=') {
+                                    final_sql += repeat_equal_sign ? "==" : "=";
+                                    repeat_equal_sign = true;
+                                }
+
+                                else if (update[j] == ';'){
+                                    break;
+                                }
+                                
+                                else {
+                                    final_sql += update[j];
+                                }
+                            }
+
+                            cout << final_sql << endl;
+                        
+
+                            // Obtain attribute
+                            string cond_start ="SET";
+                            string cond_end ="=";
+                            int num = 3;
+                            string update_att = f_update(final_sql,cond_start, cond_end, num);
+
+                            cout<< update_att<< endl;
+
+                            // Obtain attribute 
+                            cond_start ="WHERE";
+                            cond_end ="==";
+                            num = 5;
+                            string update_where_att = f_update(final_sql,cond_start, cond_end, num);
+
+                            cout<< update_where_att<< endl;
+
+                            break;
+
+                        }
+                        else{
+                            cout << update_table << " table doesn't exit. Please check your UPDATE sql command.";
                         }
                     }
             }
@@ -258,7 +312,7 @@ int main() {
 
 // Function of printing the table
 void print_table(const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute ){
-
+    
     cout << endl;
     for (const auto& row : table) {
         if (holds_alternative<string>(row)) {
@@ -304,4 +358,67 @@ vector<string> f_insert(const string insert_into, const string cond_start,const 
     }
 
     return insert_;
+}
+
+// Function of finding the table name from SELECT* and SELECT COUNT sql command.
+string get_table_name(const vector<string> word, const size_t i){
+    int j=0;
+    string table_name;
+
+    for (j=i+1 ; j<word.size(); j++){
+        if(word[j] == "FROM"){
+            table_name = word[j+1];
+            break;
+        }
+    }
+
+    size_t pos = table_name.find(';');
+    if (pos != string::npos) {
+        table_name.erase(pos, 1); // Erase one character at the found position
+    }
+    return table_name;
+}
+
+int total_count(const vector<variant<string, vector<variant<int, string>>>>& table){
+    cout << endl;
+    int i=0;
+
+    for (const auto& row : table) {
+        if (holds_alternative<vector<variant<int, string>>>(row)) {
+            i+=1;
+        }
+    }
+
+    return i;
+}
+
+// Function to get INSERT INTO, UPDATE full sql command start from the table name.
+string full_sql_command(const vector<string> word, const size_t i){
+    int j;
+    bool s_condition= true;
+    bool second= false;
+    string sql;
+
+    // Obtain INSERT INTO sql command
+    for (j = i; j<word.size(); j++){
+        if (s_condition == true){
+            sql+=word[j];
+
+            if (word[j].find(";") != string::npos) {
+                s_condition = false;
+            }
+        }
+    }
+    return sql;
+}
+
+// Function of finding attributes and the values from the UPDATE sql command.
+string f_update(const string update_sql, const string cond_start,const string cond_end, const int num){
+
+    size_t start = update_sql.find(cond_start) + num;
+    size_t end = update_sql.find(cond_end);
+    string update = update_sql.substr(start, end - start);
+    update = update.substr(0, update.size());
+
+    return update;
 }
