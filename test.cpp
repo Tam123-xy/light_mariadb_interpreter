@@ -4,131 +4,132 @@
 #include <string>
 #include <sstream>
 #include <variant>
+#include <algorithm>
 using namespace std;
 
-int main(){
-    int num;
-    string target ="VALUES(";
+// int main(){
+//     int num;
+//     string target ="VALUES(";
     
-    vector <string> word ={"customer",
-                            "(na",
-                            "me,add",
-                            "ress,id)VAL",
-                            "UES",
-                            "(xin",
-                            "yi",
-                            ",kuala",
-                            "lumpur,1);"};
+//     vector <string> word ={"customer",
+//                             "(na",
+//                             "me,add",
+//                             "ress,id)VAL",
+//                             "UES",
+//                             "(xin",
+//                             "yi",
+//                             ",kuala",
+//                             "lumpur,1);"};
 
-    string plus = word[0];
-    vector <string> result;
+//     string plus = word[0];
+//     vector <string> result;
 
-    for (int i=0; i<word.size(); i++){
-        if(plus.find(target)!= string::npos){
+//     for (int i=0; i<word.size(); i++){
+//         if(plus.find(target)!= string::npos){
 
-            size_t start = plus.find("VALUES(") + 7;
-            string values = plus.substr(start);
-            values = values.substr(0, values.size());
-            // cout << values<< " values";
-            num = i;
-            result.push_back(values);
-            break;
-        }
-        else{
-            plus+=word[i];
-        }
+//             size_t start = plus.find("VALUES(") + 7;
+//             string values = plus.substr(start);
+//             values = values.substr(0, values.size());
+//             // cout << values<< " values";
+//             num = i;
+//             result.push_back(values);
+//             break;
+//         }
+//         else{
+//             plus+=word[i];
+//         }
 
-    }
+//     }
 
-    for(num; num<word.size(); num++){
+//     for(num; num<word.size(); num++){
 
-        if(num == word.size() -1){
-            string w = word[ word.size() -1];
+//         if(num == word.size() -1){
+//             string w = word[ word.size() -1];
 
-            size_t end = w.find(");");
-            string values = w.substr(0, end);
-            values = values.substr(0, values.size());
-            result.push_back(values);
+//             size_t end = w.find(");");
+//             string values = w.substr(0, end);
+//             values = values.substr(0, values.size());
+//             result.push_back(values);
 
-        }
-        else{
-            result.push_back(word[num]);
-        }
+//         }
+//         else{
+//             result.push_back(word[num]);
+//         }
         
-    }
+//     }
 
-    for(int i =0; i<result.size(); i++){
-        cout << result[i]<< endl;
-    }
+//     for(int i =0; i<result.size(); i++){
+//         cout << result[i]<< endl;
+//     }
 
-}
+// }
 
-vector<string> splitString(const string& str, char delimiter) {
-    vector<string> result;
-    stringstream ss(str);
-    string token;
+// vector<string> splitString(const string& str, char delimiter) {
+//     vector<string> result;
+//     stringstream ss(str);
+//     string token;
 
-    while (getline(ss, token, delimiter)) {
-        if (!result.empty()) {
-            token = "," + token;  // Add back the delimiter except for the first element
-        }
-        result.push_back(token);
-    }
+//     while (getline(ss, token, delimiter)) {
+//         if (!result.empty()) {
+//             token = "," + token;  // Add back the delimiter except for the first element
+//         }
+//         result.push_back(token);
+//     }
 
-    return result;
-}
+//     return result;
+// }
 
-int main() {
-    string c, previous_c,r,plus ;
-    vector<string> abc;
-    // string vecc = "xinyi,kualalumpur,1";
+// int main() {
+//     string c, previous_c,r,plus ;
+//     vector<string> abc;
+//     // string vecc = "xinyi,kualalumpur,1";
     
-    vector<string> words = {"xin","yi",",kuala","lumpur,1"};
-    vector<string> vec = {"xinyi",",kualalumpur",",1"};
+//     vector<string> words = {"xin","yi",",kuala","lumpur,1"};
+//     vector<string> vec = {"xinyi",",kualalumpur",",1"};
 
-    string result =words[0];
-    bool same=false;
+//     string result =words[0];
+//     bool same=false;
 
    
     
-    for(int i=0; i<words.size();i++){
-        for(int j=0;j<vec.size();j++){
+//     for(int i=0; i<words.size();i++){
+//         for(int j=0;j<vec.size();j++){
 
-            if(result.find(vec[j])!= string::npos){
-                if(!same&& !c.empty()){
-                    int s = abc.size();
-                    if(c!= previous_c){
-                        abc.push_back(c);
-                        previous_c =c;
-                        c.clear();
-                    }
+//             if(result.find(vec[j])!= string::npos){
+//                 if(!same&& !c.empty()){
+//                     int s = abc.size();
+//                     if(c!= previous_c){
+//                         abc.push_back(c);
+//                         previous_c =c;
+//                         c.clear();
+//                     }
                     
-                }
-                result.clear();
-                result = words[i];
-            }
+//                 }
+//                 result.clear();
+//                 result = words[i];
+//             }
 
             
-            else{
-                if (i < words.size() - 1){
-                    result+=words[i+1];
-                    c= words[i]+ " "+words[i+1];
+//             else{
+//                 if (i < words.size() - 1){
+//                     result+=words[i+1];
+//                     c= words[i]+ " "+words[i+1];
                    
-                }
-                same =false;
+//                 }
+//                 same =false;
                 
-            }
-        }
-    }
+//             }
+//         }
+//     }
 
-    for(int i=0;i<abc.size();i++){
-        r+=abc[i];
-    }
+//     for(int i=0;i<abc.size();i++){
+//         r+=abc[i];
+//     }
 
-    // cout<<r;
+//     // cout<<r;
 
     
-}
+// }
 
 
 
@@ -283,21 +284,40 @@ int main() {
 //     return 0;
 // }
 
-for (size_t j = 0; j < update.length(); j++) {
+// for (size_t j = 0; j < update.length(); j++) {
 
-    if (update[j] == '=' && repeat_equal_sign == true) {
-        final_sql += "==";  
-    } 
+//     if (update[j] == '=' && repeat_equal_sign == true) {
+//         final_sql += "==";  
+//     } 
 
-    else if(update[j] == '=' && repeat_equal_sign == false){
-        final_sql += update[j];
-        repeat_equal_sign = true;
+//     else if(update[j] == '=' && repeat_equal_sign == false){
+//         final_sql += update[j];
+//         repeat_equal_sign = true;
 
+//     }
+
+//     else{
+//         final_sql += update[j];  
+//     }
+// }
+
+// cout << final_sql << endl;
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<std::string> a = {"1", "2", "'Cherry'"};
+
+    for (std::string &s : a) {
+        s.erase(remove(s.begin(), s.end(), '\''), s.end());  // 删除所有 '"'
     }
 
-    else{
-        final_sql += update[j];  
+    // 输出结果
+    for (int i=0; i<a.size(); i++){
+        cout<< a[i]<< endl;
     }
+
+    return 0;
 }
-
-cout << final_sql << endl;

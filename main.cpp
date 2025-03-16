@@ -6,16 +6,21 @@
 #include <sstream>
 #include <variant>
 #include <unordered_map>
+#include <algorithm>
+#include <utility>
 using namespace std;
 namespace fs = std::filesystem;
 
 // Function prototypes
 void print_table(const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute);
-vector<string> f_insert(const string insert_into, const string cond_start,const string cond_end, const int num);
+void f_insert(const string insert_into, const string cond_start,const string cond_end, const int num, vector<string>& insert_, vector<string>& value_type);
 string get_table_name(const vector<string> word, const size_t i);
 int total_count(const vector<variant<string, vector<variant<int, string>>>>& table);
 string full_sql_command(const vector<string> word, const size_t i);
 string f_update(const string update_sql, const string cond_start,const string cond_end, const int num);
+vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute );
+bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att);
+// string update_change_dataTYPE(const vector<string> attribute,const vector<string> dataType, const string value, const string update_att);
 
 
 int main() {
@@ -87,7 +92,7 @@ int main() {
                 }
 
                 // Loop vector words
-                for (i=0; i < word.size(); i++){
+                for (int i=0; i < word.size(); i++){
 
                     // Handle CREATE
                     if (word[i] == "CREATE"){
@@ -175,41 +180,68 @@ int main() {
                             string cond_start ="(";
                             string cond_end =")";
                             int num = 1;
-                            vector<string> insert_attr = f_insert(insert_into,cond_start, cond_end, num);
+                            vector<string> insert_attr; 
+                            vector<string> unless;
+                            f_insert(insert_into,cond_start, cond_end, num, insert_attr,unless);
+
 
                             // Obtain values 
                             cond_start ="VALUES(";
                             cond_end =");";
                             num = 7;
-                            vector<string> value = f_insert(insert_into,cond_start, cond_end, num);
+                            vector<string> value; 
+                            vector<string> value_type;
+                            f_insert(insert_into,cond_start, cond_end, num, value, value_type);
+                          
 
-                            
                             // Sort the value by following the oder of attribute (CREATE TABLE).
-                            unordered_map<string, string> value_map;
-                            for (size_t j = 0; j < insert_attr.size(); j++) {
-                                value_map[insert_attr[j]] = value[j];
-                            }
+                            // unordered_map<string, string> value_map;
+                            // for (size_t j = 0; j < insert_attr.size(); j++) {
+                            //     value_map[insert_attr[j]] = value[j];
+                            // }
 
-                            std::vector<std::string> sorted_values;
-                            for (const auto& key : attribute) {
-                                sorted_values.push_back(value_map[key]);
-                            }
+                            vector<string> sorted_values = sort(insert_attr,value,attribute);
+                            vector<string> sorted_value_type = sort(insert_attr,value_type,attribute);
+                            // for (const auto& key : attribute) {
+                            //     sorted_values.push_back(value_map[key]);
+                            // }
 
                             // Change the data type of value by following the data type given (CRETE TABLE).
                             for(size_t j =0; j<dataType.size(); j++){
                                 
-                                if(dataType[j] == "int"){
+                                if(dataType[j] == "int" && sorted_value_type[j] == "i"){
                                     try{ daT_values.push_back(stoi(sorted_values[j]));}
                                     
                                     // When the values cannot change to int.
                                     catch (const std::invalid_argument&){
-                                        cout << "Error: \"" << sorted_values[j] << "\" is not a valid integer. "
-                                             << "Please check your INSERT INTO and CREATE TABLE SQL command." << endl;
+                                        cout << "Error: value \"" << sorted_values[j] << "\" from INSERT INTO sql is not a valid integer. "
+                                             << "Please check your INSERT INTO SQL command." << endl;
                                         exit(1); 
                                     }
+                                }
+
+                                else if (dataType[j] == "string" && sorted_value_type[j] == "s"){
+                                    daT_values.push_back(sorted_values[j]);
+                                }
+
+                                else if (dataType[j] == "int" && sorted_value_type[j] == "s"){
+                                    cout << "Error: value \"" << sorted_values[j] << "\" from INSERT INTO sql."
+                                         << "Your CREATE TABLE SQL sets the attribute's value (" << attribute[j] << ") to the INT data type. "
+                                         << "However, your INSERT INTO SQL sets the value to a STRING. "
+                                         << "Make sure your value in the INSERT INTO SQL does not contain quotation marks ('') and is an integer."
+                                         << endl;
+                                    exit(1); 
+                                }
+
+                                else{
+                                    cout << "Error: value \"" << sorted_values[j] << "\" from INSERT INTO sql."
+                                         << "Your CREATE TABLE SQL sets the attribute's value (" << attribute[j] << ") to the STRING data type. "
+                                         << "However, your INSERT INTO SQL sets the value to a INT. "
+                                         << "Make sure your value in the INSERT INTO SQL do contain quotation marks ('')."
+                                         << endl;
+                                    exit(1); 
                                     
                                 }
-                                else{daT_values.push_back(sorted_values[j]);}
                             }
 
                             table.push_back(daT_values);
@@ -267,6 +299,7 @@ int main() {
                                 }
 
                                 else if (update[j] == ';'){
+                                    final_sql += update[j];
                                     break;
                                 }
                                 
@@ -275,7 +308,7 @@ int main() {
                                 }
                             }
 
-                            cout << final_sql << endl;
+                            // cout << final_sql << endl;
                         
 
                             // Obtain attribute
@@ -284,7 +317,11 @@ int main() {
                             int num = 3;
                             string update_att = f_update(final_sql,cond_start, cond_end, num);
 
-                            cout<< update_att<< endl;
+                            // Obtain value 
+                            cond_start ="=";
+                            cond_end ="WHERE";
+                            num = 1;
+                            string update_att_value = f_update(final_sql,cond_start, cond_end, num);
 
                             // Obtain attribute 
                             cond_start ="WHERE";
@@ -292,20 +329,59 @@ int main() {
                             num = 5;
                             string update_where_att = f_update(final_sql,cond_start, cond_end, num);
 
-                            cout<< update_where_att<< endl;
+                            // Obtain value 
+                            cond_start ="==";
+                            cond_end =";";
+                            num = 2;
+                            string update_where_val = f_update(final_sql,cond_start, cond_end, num);
+                           
+                            bool has_update_att = find(attribute.begin(), attribute.end(), update_att) != attribute.end();
+                            bool has_update_where_att = find(attribute.begin(), attribute.end(), update_where_att) != attribute.end();
+                            
+                            // Check if attribute is found
+                            if(has_update_att && has_update_where_att){
 
-                            break;
+                                bool a =update_change_dataTYPE(attribute,dataType, update_att_value ,update_att);
+                                bool b =update_change_dataTYPE(attribute,dataType, update_where_val, update_where_att);
+
+                                if(a){
+                                    stoi(update_att_value);
+                                }
+
+                                if(b){
+                                    stoi(update_where_val);
+                                }
+
+                                cout<< table.size()<< "yes";
+                                
+                            }
+
+                            else if(!has_update_att && has_update_where_att){
+                                cout << "Error: Attribute \"" << update_att << "\" not found in the attribute list." << endl;
+                                exit(1);
+                            }
+
+                            else if(has_update_att && ! has_update_where_att){
+                                cout << "Error: Attribute \"" << update_where_att << "\" not found in the attribute list." << endl;
+                                exit(1);
+                            }
+
+                            else{
+                                cout << "Error: Attribute \"" << update_where_att << "\" and \" " << update_att << " \"not found in the attribute list." << endl;
+                                exit(1);
+                            }
+                            
 
                         }
                         else{
                             cout << update_table << " table doesn't exit. Please check your UPDATE sql command.";
                         }
                     }
+                }
             }
         }
-    }
 
-}
+    }
     return 0;
 
 }
@@ -328,7 +404,7 @@ void print_table(const vector<variant<string, vector<variant<int, string>>>>& ta
 
     for (const auto& row : table) {
         if (holds_alternative<vector<variant<int, string>>>(row)) {
-            cout << "Data: ";
+            // cout << "Data: ";
             for (const auto& item : get<vector<variant<int, string>>>(row)) {
                 if (holds_alternative<int>(item)) {
                     cout << get<int>(item) << " ";
@@ -342,22 +418,31 @@ void print_table(const vector<variant<string, vector<variant<int, string>>>>& ta
 }
 
 // Function of finding attributes and the values from the INSERT INTO sql command.
-vector<string> f_insert(const string insert_into, const string cond_start,const string cond_end, const int num){
+void f_insert(const string insert_into, const string cond_start,const string cond_end, const int num, vector<string>& insert_, vector<string>& value_type){
     size_t start = insert_into.find(cond_start) + num;
     size_t end = insert_into.find(cond_end);
     string insert = insert_into.substr(start, end - start);
     insert = insert.substr(0, insert.size());
 
-    vector<string> insert_;  // Vector to store split values
+
+    // vector<string> insert_;  // Vector to store split values
     stringstream ss(insert);
     string token;
+    // vector<string> value_type;
 
     // Split string using ',' as the delimiter
     while (getline(ss, token, ',')) {
         insert_.push_back(token);
     }
 
-    return insert_;
+    for (string &s : insert_) {
+        if (s.find('\'') != std::string::npos){
+            s.erase(remove(s.begin(), s.end(), '\''), s.end());  
+            value_type.push_back("s");
+        }
+        else{value_type.push_back("i");}
+        
+    }
 }
 
 // Function of finding the table name from SELECT* and SELECT COUNT sql command.
@@ -419,6 +504,51 @@ string f_update(const string update_sql, const string cond_start,const string co
     size_t end = update_sql.find(cond_end);
     string update = update_sql.substr(start, end - start);
     update = update.substr(0, update.size());
+    string temp;
+
+    if(update.find("'")!= string::npos){
+        update.erase(remove(update.begin(), update.end(), '\''), update.end());
+    }
 
     return update;
+}
+
+vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute ){
+
+    unordered_map<string, string> value_map;
+    for (size_t j = 0; j < insert_attr.size(); j++) {
+        value_map[insert_attr[j]] = value[j];
+    }
+
+    vector<std::string> sorted_values;
+    for (const auto& key : attribute) {
+        sorted_values.push_back(value_map[key]);
+    }
+
+    return sorted_values;
+}
+
+bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att) {
+
+    // Find the index of update_att in attribute
+    auto it = find(attribute.begin(), attribute.end(), update_att);
+   
+    int index_update_att = distance(attribute.begin(), it);
+    string typeOf_att_value = dataType[index_update_att];
+
+    if (typeOf_att_value == "int") {
+        try {
+            stoi(value);  // Try converting value to int
+            bool is_int = true;
+            return true;
+
+        } catch (const invalid_argument&) {
+            cout << "Error: Value \"" << value << "\" from UPDATE SQL is not a valid integer. "
+                 << "Please check your UPDATE SQL command." << endl;
+            exit(1);
+        }
+    }
+
+    return false;
+    // If type is not "int", return the original value
 }

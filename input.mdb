@@ -8,13 +8,12 @@ CREATE TABLE customer(
 );
 TABLES;
 
-INSERT INTO customer (na me,add ress,id)VAL UES (xin yi ,kulai,1);
-INSERT INTO customer (na me,add ress,id)VAL UES (tommy ,kualalumpur,2);
-INSERT INTO customer (na me,add ress,id)VAL UES (weishanz ,penang,3);
 
-SELECT COUNT(*) FROM customer;
-SELECT * FROM customer;
+INSERT INTO customer(name,id,address) VALUES ('xinyi', 1 , 'kulai');
 
-UPDATE customer SET customer_email='email333' WHERE customer_id= 3;
+SELECT* FROM customer;
+
+UPDATE customer SET name ='tommy' WHERE id= 1;
+
 DELETE FROM customer WHERE customer_id=4;
 
