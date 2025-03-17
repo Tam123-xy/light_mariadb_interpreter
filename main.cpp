@@ -300,7 +300,8 @@ int main() {
                                 }
                             }
 
-                            // cout << final_sql << endl;
+                            repeat_equal_sign = false;
+                            cout << final_sql << endl;
                         
                             // Obtain attribute
                             string cond_start ="SET";
@@ -344,7 +345,7 @@ int main() {
                                 // cout<<index_update_att<<endl<<index_update_where_att<<endl;
 
                                 if(a){
-                                    //  int_val = stoi(update_att_value);
+                                    int_val = stoi(update_att_value);
                                 }
 
                                 if(b){
@@ -369,7 +370,7 @@ int main() {
                                                 if(*str == update_where_val){
                                                     // r+=1;
                                                     r = i;
-                                                    cout<< "string"<<i<<endl;
+                                                    // cout<< "string"<<i<<endl;
                                                     break;
                                                 }
                                                 // cout << *str << endl;
@@ -378,7 +379,7 @@ int main() {
                                             else if (auto* num = get_if<int>(&row[index])) {
                                                 if(*num == int_where_val){
                                                    r = i;
-                                                    cout<< "int"<<i<<endl;
+                                                    // cout<< "int"<<i<<endl;
                                                     break;
                                                 }
                                                 // cout << *num << endl;
@@ -388,50 +389,35 @@ int main() {
                                 }
 
                                 if (r < table.size() && holds_alternative<InnerVector>(table[r])) {
-                                    const InnerVector& row = get<InnerVector>(table[r]);
 
-                                    if (index_update_att < row.size()) {
-                                        if (auto* num = get_if<int>(&row[index_update_att])) {  
-                                            cout << "旧值：" << *num << endl;
-                                            num = int_val;  // ✅ 正确修改 int
-                                            cout << "新值：" << *num << endl;
-                                        } 
+                                    auto& row = get<vector<variant<int, string>>>(table[r]);
 
-                                        else if (auto* str = get_if<string>(&row[index_update_att])) {  
-                                            cout << "旧值：" << *str << endl;
-                                            str = update_att_value;  // ✅ 正确修改 string
-                                            cout << "新值：" << *str << endl;
-                                        }
-                            
-                                    }
-                                    
-                                    // if (holds_alternative<int>(row[index_update_att])) {
+                                    if (holds_alternative<int>(row[index_update_att])) {
 
-                                    //     int* num = get<int>(&row[index_update_att]);
-                                    //     *num = int_val;
-
-                                    //     // cout << get<int>(row[index_update_att]) << endl;
+                                        get<int>(row[index_update_att]) = int_val;
+                                        // print_table(table,attribute);
                                         
-                                    // } 
-                                    // else if (holds_alternative<string>(row[index_update_att])) {
+                                        // cout << get<int>(row[index_update_att]) << endl;
+                                    } 
+                                    else if (holds_alternative<string>(row[index_update_att])) {
 
-                                    //     int* num = get<int>(&row[index_update_att]);
-                                    //     *num = update_att_value;
+                                        get<string>(row[index_update_att]) = update_att_value;
+                                        // print_table(table,attribute);
 
                                         // cout << get<string>(row[index_update_att]) << endl;
-                                        // get<string>(row[index_update_att]) = update_att_value;
-                                    // }
-
                                     
-                                
-                                    
-                                   
+                                    }
                                 } 
-                                
-                                else {
-                                    cout << "Invalid row index!" << endl;
-                                }
 
+                                // print_table(table,attribute);
+                                final_sql.clear();
+                            
+
+                                
+
+                                
+                                
+                            
 
                             }
 

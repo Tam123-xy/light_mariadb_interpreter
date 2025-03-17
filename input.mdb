@@ -16,7 +16,11 @@ INSERT INTO customer(name,id,address) VALUES ('tommy', 2 , 'kuala');
 
 SELECT * FROM customer;
 
-UPDATE customer SET name ='weishanz' WHERE id =2;
+UPDATE customer SET name ='shi xian' WHERE id = 1;
+UPDATE customer SET address ='pinang' WHERE name ='tommy';
+
+
+
 
 DELETE FROM customer WHERE customer_id=4;
 
