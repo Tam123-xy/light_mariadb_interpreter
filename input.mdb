@@ -9,11 +9,14 @@ CREATE TABLE customer(
 TABLES;
 
 
+
 INSERT INTO customer(name,id,address) VALUES ('xinyi', 1 , 'kulai');
 
-SELECT* FROM customer;
+INSERT INTO customer(name,id,address) VALUES ('tommy', 2 , 'kuala');
 
-UPDATE customer SET name ='tommy' WHERE id= 1;
+SELECT * FROM customer;
+
+UPDATE customer SET name ='weishanz' WHERE id =2;
 
 DELETE FROM customer WHERE customer_id=4;
 

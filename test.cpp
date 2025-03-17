@@ -1,11 +1,11 @@
-#include <iostream>
-#include <vector>
-#include <unordered_map>
-#include <string>
-#include <sstream>
-#include <variant>
-#include <algorithm>
-using namespace std;
+// #include <iostream>
+// #include <vector>
+// #include <unordered_map>
+// #include <string>
+// #include <sstream>
+// #include <variant>
+// #include <algorithm>
+// using namespace std;
 
 // int main(){
 //     int num;
@@ -303,21 +303,70 @@ using namespace std;
 
 // cout << final_sql << endl;
 
+// #include <iostream>
+// #include <vector>
+// #include <algorithm>
+
+// int main() {
+//     std::vector<std::string> a = {"1", "2", "'Cherry'"};
+
+//     for (std::string &s : a) {
+//         s.erase(remove(s.begin(), s.end(), '\''), s.end());  // 删除所有 '"'
+//     }
+
+//     // 输出结果
+//     for (int i=0; i<a.size(); i++){
+//         cout<< a[i]<< endl;
+//     }
+
+//     return 0;
+// }
+
 #include <iostream>
 #include <vector>
-#include <algorithm>
+#include <variant>
+#include <string>
+
+using namespace std;
+
+using InnerVector = vector<variant<int, string>>;
+using Table = vector<variant<string, InnerVector>>;
 
 int main() {
-    std::vector<std::string> a = {"1", "2", "'Cherry'"};
+    Table table = {
+        "customer",
+        InnerVector{"name", "id", "address"},
+        InnerVector{"xinyi", 1, "kulai"},
+        InnerVector{"tommy", 2, "kuala lumpur"}
+    };
 
-    for (std::string &s : a) {
-        s.erase(remove(s.begin(), s.end(), '\''), s.end());  // 删除所有 '"'
-    }
+    int rowIndex = 2;  // 目标行索引
+    int colIndex = 1;  // 目标列索引
+    int int_val = 99;  // 新的整数值
+    string update_att_value = "updated_name";  // 新的字符串值
 
-    // 输出结果
-    for (int i=0; i<a.size(); i++){
-        cout<< a[i]<< endl;
+    // 确保索引有效
+    if (rowIndex < table.size() && holds_alternative<InnerVector>(table[rowIndex])) {
+        InnerVector& row = get<InnerVector>(table[rowIndex]);  // 获取该行
+
+        if (colIndex < row.size()) {
+            if (auto* num = get_if<int>(&row[colIndex])) {  
+                cout << "旧值：" << *num << endl;
+                *num = int_val;  // ✅ 正确修改 int
+                cout << "新值：" << *num << endl;
+            } 
+            else if (auto* str = get_if<string>(&row[colIndex])) {  
+                cout << "旧值：" << *str << endl;
+                *str = update_att_value;  // ✅ 正确修改 string
+                cout << "新值：" << *str << endl;
+            }
+        } else {
+            cout << "错误：列索引超出范围！" << endl;
+        }
+    } else {
+        cout << "错误：行索引无效！" << endl;
     }
 
     return 0;
 }
+

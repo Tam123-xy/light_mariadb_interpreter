@@ -10,6 +10,7 @@
 #include <utility>
 using namespace std;
 namespace fs = std::filesystem;
+using InnerVector = vector<variant<int, string>>;
 
 // Function prototypes
 void print_table(const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute);
@@ -19,8 +20,8 @@ int total_count(const vector<variant<string, vector<variant<int, string>>>>& tab
 string full_sql_command(const vector<string> word, const size_t i);
 string f_update(const string update_sql, const string cond_start,const string cond_end, const int num);
 vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute );
-bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att);
-// string update_change_dataTYPE(const vector<string> attribute,const vector<string> dataType, const string value, const string update_att);
+bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att, int& index);
+// void update(const int index, const vector<variant<string, vector<variant<int, string>>>>& table, const int i_val, const string s_val);
 
 
 int main() {
@@ -42,6 +43,7 @@ int main() {
     string insert_into, update;
     bool repeat_equal_sign = false;
     string final_sql;
+    int int_val,int_where_val,r=0;
    
     // Detect file mdb 
     for (const auto& entry : fs::directory_iterator(path)) {
@@ -193,18 +195,8 @@ int main() {
                             vector<string> value_type;
                             f_insert(insert_into,cond_start, cond_end, num, value, value_type);
                           
-
-                            // Sort the value by following the oder of attribute (CREATE TABLE).
-                            // unordered_map<string, string> value_map;
-                            // for (size_t j = 0; j < insert_attr.size(); j++) {
-                            //     value_map[insert_attr[j]] = value[j];
-                            // }
-
                             vector<string> sorted_values = sort(insert_attr,value,attribute);
                             vector<string> sorted_value_type = sort(insert_attr,value_type,attribute);
-                            // for (const auto& key : attribute) {
-                            //     sorted_values.push_back(value_map[key]);
-                            // }
 
                             // Change the data type of value by following the data type given (CRETE TABLE).
                             for(size_t j =0; j<dataType.size(); j++){
@@ -310,30 +302,33 @@ int main() {
 
                             // cout << final_sql << endl;
                         
-
                             // Obtain attribute
                             string cond_start ="SET";
                             string cond_end ="=";
                             int num = 3;
                             string update_att = f_update(final_sql,cond_start, cond_end, num);
+                            // cout<<update_att<<endl;
 
                             // Obtain value 
                             cond_start ="=";
                             cond_end ="WHERE";
                             num = 1;
-                            string update_att_value = f_update(final_sql,cond_start, cond_end, num);
+                            auto update_att_value = f_update(final_sql,cond_start, cond_end, num);
+                            // cout<<update_att_value<<endl;
 
                             // Obtain attribute 
                             cond_start ="WHERE";
                             cond_end ="==";
                             num = 5;
                             string update_where_att = f_update(final_sql,cond_start, cond_end, num);
+                            // cout<<update_where_att<<endl;
 
                             // Obtain value 
                             cond_start ="==";
                             cond_end =";";
                             num = 2;
-                            string update_where_val = f_update(final_sql,cond_start, cond_end, num);
+                            auto update_where_val = f_update(final_sql,cond_start, cond_end, num);
+                            // cout<<update_where_val<<endl;
                            
                             bool has_update_att = find(attribute.begin(), attribute.end(), update_att) != attribute.end();
                             bool has_update_where_att = find(attribute.begin(), attribute.end(), update_where_att) != attribute.end();
@@ -341,19 +336,103 @@ int main() {
                             // Check if attribute is found
                             if(has_update_att && has_update_where_att){
 
-                                bool a =update_change_dataTYPE(attribute,dataType, update_att_value ,update_att);
-                                bool b =update_change_dataTYPE(attribute,dataType, update_where_val, update_where_att);
+                                int index_update_att, index_update_where_att;
+                                bool a =update_change_dataTYPE(attribute,dataType, update_att_value ,update_att, index_update_att);
+                                bool b =update_change_dataTYPE(attribute,dataType, update_where_val, update_where_att, index_update_where_att);
+                                // update_change_dataTYPE(attribute,update_att, index_update_att);
+                                // update_change_dataTYPE(attribute,update_where_att, index_update_where_att);
+                                // cout<<index_update_att<<endl<<index_update_where_att<<endl;
 
                                 if(a){
-                                    stoi(update_att_value);
+                                    //  int_val = stoi(update_att_value);
                                 }
 
                                 if(b){
-                                    stoi(update_where_val);
+                                    int_where_val = stoi(update_where_val);
                                 }
 
-                                cout<< table.size()<< "yes";
                                 
+                                
+                                // int index = index_update_att;
+                                int index= index_update_where_att;
+
+                                // update( index, table, int_where_val,  update_where_val);
+                            
+                                for (size_t i = 1; i < table.size(); ++i) {  // 跳过表头
+
+                                    if (holds_alternative<InnerVector>(table[i])) {
+                                        const InnerVector& row = get<InnerVector>(table[i]);
+
+                                        if (index < row.size()) {
+
+                                            if (auto* str = get_if<string>(&row[index])) {
+                                                if(*str == update_where_val){
+                                                    // r+=1;
+                                                    r = i;
+                                                    cout<< "string"<<i<<endl;
+                                                    break;
+                                                }
+                                                // cout << *str << endl;
+                                            } 
+                                            
+                                            else if (auto* num = get_if<int>(&row[index])) {
+                                                if(*num == int_where_val){
+                                                   r = i;
+                                                    cout<< "int"<<i<<endl;
+                                                    break;
+                                                }
+                                                // cout << *num << endl;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (r < table.size() && holds_alternative<InnerVector>(table[r])) {
+                                    const InnerVector& row = get<InnerVector>(table[r]);
+
+                                    if (index_update_att < row.size()) {
+                                        if (auto* num = get_if<int>(&row[index_update_att])) {  
+                                            cout << "旧值：" << *num << endl;
+                                            num = int_val;  // ✅ 正确修改 int
+                                            cout << "新值：" << *num << endl;
+                                        } 
+
+                                        else if (auto* str = get_if<string>(&row[index_update_att])) {  
+                                            cout << "旧值：" << *str << endl;
+                                            str = update_att_value;  // ✅ 正确修改 string
+                                            cout << "新值：" << *str << endl;
+                                        }
+                            
+                                    }
+                                    
+                                    // if (holds_alternative<int>(row[index_update_att])) {
+
+                                    //     int* num = get<int>(&row[index_update_att]);
+                                    //     *num = int_val;
+
+                                    //     // cout << get<int>(row[index_update_att]) << endl;
+                                        
+                                    // } 
+                                    // else if (holds_alternative<string>(row[index_update_att])) {
+
+                                    //     int* num = get<int>(&row[index_update_att]);
+                                    //     *num = update_att_value;
+
+                                        // cout << get<string>(row[index_update_att]) << endl;
+                                        // get<string>(row[index_update_att]) = update_att_value;
+                                    // }
+
+                                    
+                                
+                                    
+                                   
+                                } 
+                                
+                                else {
+                                    cout << "Invalid row index!" << endl;
+                                }
+
+
                             }
 
                             else if(!has_update_att && has_update_where_att){
@@ -528,13 +607,13 @@ vector<string> sort(vector<string> insert_attr,vector<string> value,vector<strin
     return sorted_values;
 }
 
-bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att) {
+bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att, int& index) {
 
     // Find the index of update_att in attribute
     auto it = find(attribute.begin(), attribute.end(), update_att);
    
-    int index_update_att = distance(attribute.begin(), it);
-    string typeOf_att_value = dataType[index_update_att];
+    index = distance(attribute.begin(), it);
+    string typeOf_att_value = dataType[index];
 
     if (typeOf_att_value == "int") {
         try {
@@ -550,5 +629,31 @@ bool update_change_dataTYPE(const vector<string>& attribute, const vector<string
     }
 
     return false;
-    // If type is not "int", return the original value
 }
+
+// void update(const int index, const vector<variant<string, vector<variant<int, string>>>>& table, const int i_val, const string s_val){
+
+//     for (size_t i = 1; i < table.size(); ++i) {  // 跳过表头
+//         if (holds_alternative<InnerVector>(table[i])) {
+//             const InnerVector& row = get<InnerVector>(table[i]);
+
+//             if (index < row.size()) {
+
+//                 if (auto* str = get_if<string>(&row[index])) {
+//                     if(*str == s_val){
+//                         cout<< "string"<<endl;
+//                     }
+//                     // cout << *str << endl;
+//                 } 
+                
+//                 else if (auto* num = get_if<int>(&row[index])) {
+//                     if(*num == i_val){
+//                         cout<< "int"<<endl;
+//                     }
+//                     // cout << *num << endl;
+//                 }
+//             }
+//         }
+//     }
+
+// }
