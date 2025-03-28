@@ -11,16 +11,16 @@ TABLES;
 
 
 INSERT INTO customer(name,id,address) VALUES ('xinyi', 1 , 'kulai');
-
 INSERT INTO customer(name,id,address) VALUES ('tommy', 2 , 'kuala');
+SELECT COUNT(*) FROM customer;
+SELECT * FROM customer;
+
+UPDATE customer SET name ='shi xian' WHERE id = 2;
+SELECT * FROM customer;
+
+DELETE FROM customer 
+WHERE name=shi xian;
 
 SELECT * FROM customer;
 
-UPDATE customer SET name ='shi xian' WHERE id = 1;
-UPDATE customer SET address ='pinang' WHERE name ='tommy';
-
-
-
-
-DELETE FROM customer WHERE customer_id=4;
 
