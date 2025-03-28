@@ -15,7 +15,6 @@ using InnerVector = vector<variant<int, string>>;
 // Function prototypes
 void print_table(const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute);
 void f_insert(const string insert_into, const string cond_start,const string cond_end, const int num, vector<string>& insert_, vector<string>& value_type);
-string get_table_name(const vector<string> word, const size_t i);
 int total_count(const vector<variant<string, vector<variant<int, string>>>>& table);
 string full_sql_command(const vector<string> word, const size_t i);
 string f_update(const string update_sql, const string cond_start,const string cond_end, const int num);
@@ -248,7 +247,17 @@ int main() {
 
                     else if (word[i] == "SELECT*" || (word[i] == "SELECT" && word[i+1] == "*")){
 
-                        select_table = get_table_name(word,i);
+                        if(word[i] == "SELECT*"){
+                            select_table= word[i+2];
+                        }
+                        else{
+                            select_table= word[i+3];
+                        }
+
+                        size_t pos = select_table.find(';');
+                        if (pos != string::npos) {
+                            select_table.erase(pos, 1); // Erase one character at the found position
+                        }
 
                         // Check is the table created
                         if(select_table == get<string>(table[0])){
@@ -262,7 +271,12 @@ int main() {
 
                     else if (word[i] == "SELECT" && word[i+1] == "COUNT(*)"){
 
-                        count_table = get_table_name(word,i+2);
+                        count_table= word[i+3];
+                        
+                        size_t pos = count_table.find(';');
+                        if (pos != string::npos) {
+                            count_table.erase(pos, 1); // Erase one character at the found position
+                        }
 
                         if(count_table == get<string>(table[0])){
                             int num_count = total_count(table);
@@ -273,6 +287,7 @@ int main() {
                         else{
                             cout << count_table << " table doesn't exit. Please check your SELECT(*) COUNT sql command.";
                         }
+
                     }
 
                     else if (word[i] == "UPDATE"){
@@ -565,24 +580,7 @@ void f_insert(const string insert_into, const string cond_start,const string con
     }
 }
 
-// Function of finding the table name from SELECT* and SELECT COUNT sql command.
-string get_table_name(const vector<string> word, const size_t i){
-    int j=0;
-    string table_name;
 
-    for (j=i+1 ; j<word.size(); j++){
-        if(word[j] == "FROM"){
-            table_name = word[j+1];
-            break;
-        }
-    }
-
-    size_t pos = table_name.find(';');
-    if (pos != string::npos) {
-        table_name.erase(pos, 1); // Erase one character at the found position
-    }
-    return table_name;
-}
 
 int total_count(const vector<variant<string, vector<variant<int, string>>>>& table){
     cout << endl;
