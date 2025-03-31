@@ -1,0 +1,10 @@
+>> CREATE fileOutput.txt;
+
+>> CREATE TABLE customer(
+     id INT,
+     name TEXT,
+     address TEXT
+   );
+
+>> INSERT INTO customer(name,id,address) VALUES ('xinyi', 1 , 'kulai'); 
+
