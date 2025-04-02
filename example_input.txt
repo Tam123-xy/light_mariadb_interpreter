@@ -1,0 +1,54 @@
+CREATE fileOutput.txt;    //safe
+CREATE fileOutput2.txt;  // recreate 
+
+
+CREATE TABLE student(   // wrong data type
+    id abc,
+    name TEXT,
+    address TEXT
+);
+
+CREATE TABLE student(    //safe
+    id INT,
+    name TEXT,
+    address TEXT
+);
+
+CREATE TABLE second(    // recreate
+    id INT,
+    name TEXT,
+    address TEXT
+);
+
+INSERT INTO student(name,id,address) VALUES ('xinyi', '1' , 'kulai');     // wrong value data type, 'int' or 'string' 
+INSERT INTO student(name,id,address) VALUES ('xinyi', abc , 'kulai');     // wrong value data type, abc is not int
+INSERT INTO student(name,id,address) VALUES (xinyi, 1 , 'kulai');         //  wrong value data type, abc supposed to be 'abc'
+INSERT INTO student(name,id,address) VALUES ('xinyi', 1 , 'kulai');       // safe
+INSERT INTO second(name,id,address) VALUES ('xinyi', 1 , 'kulai');        // no table
+
+SELECT* FROM student;    // safe
+SELECT* FROM second;     // no table
+
+SELECT COUNT(*) FROM student;    // safe
+SELECT COUNT(*) FROM second;     // no table
+
+INSERT INTO student(id,address,name) VALUES (1, 'kulai', xinyi);           // safe
+INSERT INTO student(name,id,address) VALUES (tommy, 2 , dream);            // safe, ''is not important
+INSERT INTO student(name,id,address) VALUES ('tommy', abc , 'dream');      // abc is not int, bsc cannot transfer to int
+
+UPDATE student SET name = weishanz WHERE id=1;                  // safe
+UPDATE second SET name = weishanz WHERE id=1;                   // no table
+UPDATE student SET class = weishanz WHERE id=1;                 // no att
+UPDATE student SET name = weishanz WHERE clas=kulai;            // no att
+UPDATE student SET class = weishanz WHERE state=kulai;          // no att
+UPDATE student SET name = shixian WHERE id=3;                   //no same where value
+
+DELETE FROM student WHERE id=1;             //safe
+DELETE FROM second WHERE id=1;              // no table
+DELETE FROM student WHERE class=1;          // no where att
+DELETE FROM student WHERE id=4;             // no same where value
+
+
+
+
+

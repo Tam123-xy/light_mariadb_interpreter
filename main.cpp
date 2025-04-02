@@ -14,15 +14,15 @@ ofstream file;
 using InnerVector = vector<variant<int, string>>;
 
 // Function prototypes
-void print_table(const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute);
+void print_table(const string file_outputName,const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute);
 void f_insert(const string insert_into, const string cond_start,const string cond_end, const int num, vector<string>& insert_, vector<string>& value_type);
 int total_count(const vector<variant<string, vector<variant<int, string>>>>& table);
 string full_sql_command(const vector<string> word, const size_t i, string& sql_commad);
 string f_update(const string update_sql, const string cond_start,const string cond_end, const int num);
 vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute );
 bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att, int& index, const bool update_sql,bool& can_change);
-void print_fileOutput(const string file_outputName, const string sql_commad="", string comment="");
-void create_table_sql(const string file_outputName,const vector<string> attribute_dataType, const string tableName);
+void print_fileOutput(const string file_outputName, const string sql_commad="", const string comment="",const bool space=true);
+void create_table_sql(const string file_outputName,const vector<string> attribute_dataType, const string tableName, const bool sapce=false);
 
 
 int main() {
@@ -44,11 +44,13 @@ int main() {
     string insert_into, update, del;
     bool repeat_equal_sign = false;
     string final_sql;
-    int int_val,int_where_val,r;
+    int int_val,int_where_val;
+    int r=0;
     string delete_table_name;
     bool delete_same_value;
     bool create_fileOutput=false;
     string sql_commad;
+    bool print;
    
     // Detect file mdb 
     for (const auto& entry : fs::directory_iterator(path)) {
@@ -59,7 +61,7 @@ int main() {
    
     // No file mdb founded
     if (inputfiles.size() == 0){
-        cout << "No mdb file founded in path "<< path << endl << "You may change the path in main.cpp";
+        cout << "Error: \nNo mdb file founded in path "<< path << endl << "You may change the path in main.cpp";
     }
 
     else{
@@ -125,10 +127,9 @@ int main() {
                             
                             sql_commad.clear();
                             sql_commad = "CREATE "+second_file_name+";";
-                            comment = "You only can create a file output in a file input. You have already created "+ file_outputName;
+                            comment = "Error: \nYou only can create a file output in a file input. You have already created "+ file_outputName;
 
                             print_fileOutput(file_outputName,sql_commad,comment);
-                            print_fileOutput(file_outputName);
                         }
                            
                         // Create table
@@ -136,21 +137,17 @@ int main() {
 
                             //First time create table, user only can create one tabe.
                             if(create_table==true){
-                                create_table = false;
 
                                 // Obtain table name
                                 for (char c : word[i+2]) {
                                     if (c != '(') { 
                                         tableName += c;}
                                 }
-                                table.push_back(tableName);
 
                                 // Put only atribute and data type into vector table
                                 for (j = i+3; j < word.size(); j++){
                                     if (word[j] == ");"){ break;};
                                     attribute_dataType.push_back(word[j]);}
-
-                                create_table_sql(file_outputName,attribute_dataType,tableName);
 
                                 // Obtain attribute and data type seprately in vector attribute and vector type
                                 for (j = 0; j < attribute_dataType.size(); j++){
@@ -163,9 +160,13 @@ int main() {
                                     else if (datatype == true){
 
                                         if(attribute_dataType[j] == "TEXT," || attribute_dataType[j] == "TEXT"){ 
-                                                type = "string";}
+                                                type = "string";
+                                                print=true;
+                                            }
                                         else if (attribute_dataType[j] == "INT," || attribute_dataType[j] == "INT"){
-                                                type = "int";}
+                                                type = "int";
+                                                print=true;
+                                            }
 
                                         else {
                                             string unsupport;
@@ -173,16 +174,28 @@ int main() {
                                                 if (c != ',') { 
                                                     unsupport += c;}
                                             }
-                                            comment = "Unsupport data type of "+ unsupport+ " .Please check you CREATE TABLE sql command, we only support INT and TEXT data type. End Programe.";
+
+                                            create_table_sql(file_outputName,attribute_dataType,tableName);
+                                            comment = "Error: \nUnsupport data type of "+ unsupport+ " . We only support INT and TEXT data type.";
                                             print_fileOutput(file_outputName,"",comment);
-
-                                            exit(1);
+                                            print=false;
+                                            attribute.clear();
+                                            attribute_dataType.clear();
+                                            tableName.clear();
+                                            datatype= false;
+                                            break;
+                                            
                                         }
-
                                         dataType.push_back(type); 
                                         datatype = false;
                                     }
                                 }
+                                if(print){
+                                    create_table = false;
+                                    table.push_back(tableName);
+                                    create_table_sql(file_outputName,attribute_dataType,tableName,true);
+                                }
+                                
                             }
 
                             else if(create_table == false){
@@ -200,9 +213,8 @@ int main() {
                                     if (word[j] == ");"){ break;};
                                     s_attribute_dataType.push_back(word[j]);}
                                 
-                                print_fileOutput(file_outputName);
                                 create_table_sql(file_outputName,s_attribute_dataType,s_tableName);
-                                comment="You only can create one table. You have created "+tableName+ " table.";
+                                comment="Error: \nYou only can create one table. You have created "+tableName+ " table.";
                                 print_fileOutput(file_outputName,"",comment);
                                 
                             }
@@ -214,9 +226,7 @@ int main() {
 
                         // Obtain INSERT INTO sql command
                         sql_commad.clear();
-                        print_fileOutput(file_outputName);
                         insert_into = full_sql_command(word,i+2,sql_commad);
-                        print_fileOutput(file_outputName,sql_commad);
 
                         // Obtain table name
                         for (char c : insert_into) {
@@ -228,8 +238,6 @@ int main() {
 
                         // Check is the table created
                         if(insert_table == get<string>(table[0])){
-                            
-                            insert_table.clear();
 
                             // Obtain attributes 
                             string cond_start ="(";
@@ -258,8 +266,8 @@ int main() {
                                     
                                     // When the values cannot change to int.
                                     catch (const std::invalid_argument&){
-                                        cout << "Error: value \"" << sorted_values[j] << "\" from INSERT INTO sql is not a valid integer. "
-                                             << "Please check your INSERT INTO SQL command." << endl;
+                                        comment="Error: \nValue \"" + sorted_values[j] + "\" from INSERT INTO sql is not a valid integer.";
+                                        print_fileOutput(file_outputName,sql_commad,comment);
                                         break; 
                                     }
                                 }
@@ -269,33 +277,42 @@ int main() {
                                 }
 
                                 else if (dataType[j] == "int" && sorted_value_type[j] == "s"){
-                                    cout << "Error: value \"" << sorted_values[j] << "\" from INSERT INTO sql."
-                                         << "Your CREATE TABLE SQL sets the attribute's value (" << attribute[j] << ") to the INT data type. "
-                                         << "However, your INSERT INTO SQL sets the value to a STRING. "
-                                         << "Make sure your value in the INSERT INTO SQL does not contain quotation marks ('') and is an integer."
-                                         << endl;
+
+                                    comment= "Error: \nYour CREATE TABLE SQL sets the attribute's value (" 
+                                         + attribute[j] + ") to the INT data type. \n"
+                                         + "However, your INSERT INTO SQL sets \"" + sorted_values[j] + "\" to a TEXT data. \n"
+                                         + "Make sure \"" + sorted_values[j] + "\" does not contain quotation marks ('') and it is an integer.";
+
+                                    print_fileOutput(file_outputName,sql_commad,comment);
                                     break; 
                                 }
 
                                 else{
-                                    cout << "Error: value \"" << sorted_values[j] << "\" from INSERT INTO sql."
-                                         << "Your CREATE TABLE SQL sets the attribute's value (" << attribute[j] << ") to the STRING data type. "
-                                         << "However, your INSERT INTO SQL sets the value to a INT. "
-                                         << "Make sure your value in the INSERT INTO SQL do contain quotation marks ('')."
-                                         << endl;
+                                    comment= "Error: \nYour CREATE TABLE SQL sets the attribute's value (" 
+                                        + attribute[j] + ") to the STRING data type. \n"
+                                        + "However, your INSERT INTO SQL sets \"" + sorted_values[j] + "\" to a INT data. \n"
+                                        + "Make sure \"" + sorted_values[j] + "\" do contain quotation marks ('').";
+
+                                    print_fileOutput(file_outputName,sql_commad,comment);
                                     break; 
                                     
                                 }
                             }
 
-                            table.push_back(daT_values);
+                            if(daT_values.size()==sorted_values.size()){
+                                table.push_back(daT_values);
+                                print_fileOutput(file_outputName,sql_commad);
+                            }
                             daT_values.clear();
                             insert_into.clear();
                             
+                            
                         }
                         else{
-                            cout<<"Error, "<< insert_table << " table dosen't exit. Please check your INSERT INTO sql command"<< endl;
+                            comment="Error: \n"+ insert_table + " table doesn't exit.";
+                            print_fileOutput(file_outputName,sql_commad,comment);
                         }
+                        insert_table.clear();
                     }
 
                     else if (word[i] == "SELECT*" || (word[i] == "SELECT" && word[i+1] == "*")){
@@ -312,13 +329,18 @@ int main() {
                             select_table.erase(pos, 1); // Erase one character at the found position
                         }
 
+                        sql_commad.clear();
+                        sql_commad= "SELECT* FROM " +select_table;
+
                         // Check is the table created
                         if(select_table == get<string>(table[0])){
-                            print_table(table,attribute);
+                            print_fileOutput(file_outputName,sql_commad,"",false);
+                            print_table(file_outputName,table,attribute);
                         }
 
                         else{
-                            cout << select_table << " table doesn't exit. Please check your SELECT* sql command.";
+                            comment="Error: \n" + select_table + " table doesn't exit.";
+                            print_fileOutput(file_outputName,sql_commad,comment);
                         }
                     }
 
@@ -331,14 +353,20 @@ int main() {
                             count_table.erase(pos, 1); // Erase one character at the found position
                         }
 
+                        sql_commad.clear();
+                        sql_commad= "SELECT COUNT(*) FROM " +count_table;
+
                         if(count_table == get<string>(table[0])){
                             int num_count = total_count(table);
-
-                            cout << "Total row of data from table " << count_table << " is " << num_count<< "."<< endl;
+                            
+                            comment = "Total row of data from table " + count_table + " is " + to_string(num_count) + ".";
+                            print_fileOutput(file_outputName,sql_commad,comment);
+                           
                         }
 
                         else{
-                            cout << count_table << " table doesn't exit. Please check your SELECT(*) COUNT sql command.";
+                            comment = "Error:\n" + count_table + " table doesn't exit.";
+                            print_fileOutput(file_outputName,sql_commad,comment);
                         }
 
                     }
@@ -347,10 +375,11 @@ int main() {
 
                         update_table = word[i+1];
 
+                        sql_commad.clear();
+                        update = full_sql_command(word,i+2,sql_commad);
+
                         // Check is the table created
                         if(update_table == get<string>(table[0])){
-                            
-                            update = full_sql_command(word,i+2,sql_commad);
 
                             for (size_t j = 0; j < update.size(); j++) {
 
@@ -424,66 +453,71 @@ int main() {
                                 int index= index_update_where_att;
                             
                                 for (size_t i = 1; i < table.size(); ++i) {  // 跳过表头
-
                                     if (holds_alternative<InnerVector>(table[i])) {
+
                                         const InnerVector& row = get<InnerVector>(table[i]);
 
-                                        if (index < row.size()) {
+                                        if (auto* str = get_if<string>(&row[index])) {
+                                            if(*str == update_where_val){
+                                                r = i;
+                                                break;
+                                            }
+                                        } 
 
-                                            if (auto* str = get_if<string>(&row[index])) {
-                                                if(*str == update_where_val){
-                                                    r = i;
-                                                    break;
-                                                }
-                                            } 
-                                            else if (auto* num = get_if<int>(&row[index])) {
-                                                if(*num == int_where_val){
-                                                   r = i;
-                                                   break;
-                                                }
+                                        else if (auto* num = get_if<int>(&row[index])) {
+                                            if(*num == int_where_val){
+                                                r = i;
+                                                break;
                                             }
                                         }
                                     }
                                 }
 
-                                if (r > 0 && holds_alternative<InnerVector>(table[r])) {
+                                if (r>0){
 
                                     auto& row = get<InnerVector>(table[r]);  // Safe access
 
                                     if (holds_alternative<int>(row[index_update_att])) {
                                         get<int>(row[index_update_att]) = int_val;
+                                        print_fileOutput(file_outputName,sql_commad);
                                     } 
 
                                     else if (holds_alternative<string>(row[index_update_att])) {
                                         get<string>(row[index_update_att]) = update_att_value;
+                                        print_fileOutput(file_outputName,sql_commad);
                                     }
                                 } 
                                 
                                 else {
-                                    cout << update_where_val << " no founded in attribute " << update_where_att <<" in table " << update_table<< endl ;
+                                    comment= "Error:\n\"" + update_where_val + "\" is no founded in attribute \"" + update_where_att +"\".";
+                                    print_fileOutput(file_outputName,sql_commad,comment);
                                 }
-                                
+
                                 r = 0;
+
                             }
 
                             else if(!has_update_att && has_update_where_att){
-                                cout << "Error: Attribute \"" << update_att << "\" not found in the attribute list. End Programe." << endl;
-                                break;
+                                comment = "Error:\nSET Attribute \"" + update_att + "\" is not found in the attribute list.";
+                                print_fileOutput(file_outputName,sql_commad,comment);
+                               
                             }
 
                             else if(has_update_att && ! has_update_where_att){
-                                cout << "Error: Attribute \"" << update_where_att << "\" not found in the attribute list." << endl;
-                                break;
+                                comment = "Error:\nWHERE Attribute \"" + update_where_att + "\" is not found in the attribute list.";
+                                print_fileOutput(file_outputName,sql_commad,comment);
+                              
                             }
 
                             else{
-                                cout << "Error: Attribute \"" << update_where_att << "\" and \" " << update_att << " \"not found in the attribute list." << endl;
-                                break;
+                                comment = "Error:\nSET Attribute \"" + update_att + "\" and WHERE Attribute \"" + update_where_att + "\" are not found in the attribute list.";
+                                print_fileOutput(file_outputName,sql_commad,comment);
                             }
                         
                         }
                         else{
-                            cout << update_table << " table doesn't exit. Please check your UPDATE sql command.";
+                            comment = "Error:\n"+ update_table + " table doesn't exit.";
+                            print_fileOutput(file_outputName,sql_commad,comment);
                         }
                     }
 
@@ -491,11 +525,11 @@ int main() {
 
                         delete_table_name = word[i+2];
 
+                        sql_commad.clear();
+                        del = full_sql_command(word,i+2,sql_commad);
+
+
                         if(delete_table_name == get<string>(table[0])){
-
-                            del = full_sql_command(word,i+2,sql_commad);
-
-                            // cout<< del<<endl;
 
                             string cond_start ="WHERE";
                             string cond_end ="=";
@@ -508,7 +542,6 @@ int main() {
                             string delete_val = f_update(del,cond_start, cond_end, num);
                          
                             del.clear();
-
                             bool has_delete_att = find(attribute.begin(), attribute.end(), delete_att) != attribute.end();
 
                             if(has_delete_att){
@@ -540,6 +573,7 @@ int main() {
 
                                                     table.erase(table.begin() + i);
                                                     delete_same_value = true;
+                                                    print_fileOutput(file_outputName,sql_commad);
                                                     break;
                                                 }
                                             } 
@@ -548,6 +582,7 @@ int main() {
 
                                                     table.erase(table.begin() + i);
                                                     delete_same_value = true;
+                                                    print_fileOutput(file_outputName,sql_commad);
                                                    break;
                                                 }
                                             }
@@ -556,21 +591,24 @@ int main() {
                                 }
 
                                 if(!delete_same_value){
-                                    cout << "Error: Attribute \""<< delete_val << "\" is no founded in attribute " << delete_att <<" in table " << delete_table_name<< ". Please check your DELETE sql command."<< endl ;
+                                    comment = "Error:\nValue \""+ delete_val + "\" is no founded in attribute \"" + delete_att +"\" .";
+                                    print_fileOutput(file_outputName,sql_commad,comment);
                                 }
 
                                 delete_same_value = false;
 
                             }
                             else{
-                                cout << "Error: Attribute \"" << delete_att << "\" not found in the attribute list. Please check your DELETE sql command." << endl;
-                                break;
+                                comment = "Error:\nAttribute \"" + delete_att + "\" not found in the attribute list.";
+                                print_fileOutput(file_outputName,sql_commad,comment);
+            
                             }
 
                         }
 
                         else{
-                            cout << delete_table_name << " table doesn't exit. Please check your DELETE sql command.";
+                            comment = "Error:\n" + delete_table_name + " table doesn't exit.";
+                            print_fileOutput(file_outputName,sql_commad,comment);
                         }
 
                     }
@@ -581,7 +619,8 @@ int main() {
         }
 
         if(!create_fileOutput){
-            cout<< "It is better to create a file to print the output. Hence you can see the output in terminal and file output.";
+            comment = "It is better to create a file to print the output. Hence you can see the output in terminal and in file.";
+            print_fileOutput(file_outputName,"",comment);
         }
         
 
@@ -591,34 +630,44 @@ int main() {
 }
 
 // Function of printing the table
-void print_table(const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute ){
+void print_table(const string file_outputName, const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute ){
+
+    file.open(file_outputName,ios::app);
     
-    cout << endl;
     for (const auto& row : table) {
         if (holds_alternative<string>(row)) {
             cout << "TABLE " << get<string>(row) << endl;
+            file << "TABLE " << get<string>(row) << "\n";
         }
     }
 
     for(int i=0; i<attribute.size(); i++){
         cout<< attribute[i]<< " ";
+        file<< attribute[i]<< " ";
     }
 
     cout << endl;
+    file << "\n";
 
     for (const auto& row : table) {
         if (holds_alternative<vector<variant<int, string>>>(row)) {
-            // cout << "Data: ";
             for (const auto& item : get<vector<variant<int, string>>>(row)) {
                 if (holds_alternative<int>(item)) {
                     cout << get<int>(item) << " ";
+                    file << get<int>(item) << " ";
                 } else if (holds_alternative<string>(item)) {
                     cout << get<string>(item) << " ";
+                    file << get<string>(item) << " ";
                 }
             }
             cout << endl;
+            file << "\n";
         }
     }
+
+    cout << endl;
+    file << "\n";
+    file.close();
 }
 
 // Function of finding attributes and the values from the INSERT INTO sql command.
@@ -648,8 +697,6 @@ void f_insert(const string insert_into, const string cond_start,const string con
         
     }
 }
-
-
 
 int total_count(const vector<variant<string, vector<variant<int, string>>>>& table){
     cout << endl;
@@ -759,26 +806,42 @@ bool update_change_dataTYPE(const vector<string>& attribute, const vector<string
     return false;
 }
 
-void print_fileOutput(const string file_outputName, const string sql_commad, string comment){
+void print_fileOutput(const string file_outputName, const string sql_commad,const string comment, const bool space){
 
     
     file.open(file_outputName,ios::app);
 
-    if(sql_commad!=""){
+    if(!sql_commad.empty() && !comment.empty()){
+        file<<">> "<< sql_commad <<endl;
+        cout<< ">> " <<sql_commad <<endl;
+
+        file << comment <<endl;
+        cout << comment <<endl;
+    }
+
+    else if(!sql_commad.empty() && comment.empty()){
         file<<">> "<< sql_commad <<endl;
         cout<< ">> " <<sql_commad <<endl;
     }
 
-    file<< comment <<endl;
-    file.close();
+    else{
+        file << comment <<endl;
+        cout << comment <<endl;
+    }
 
-    cout << comment <<endl;
-}
-                           
-void create_table_sql(const string file_outputName,const vector<string> attribute_dataType, const string tableName){
+    if(space){
+        file<<endl;
+        cout<<endl;
+    }
+       
+        file.close();
+    }
+
+                      
+void create_table_sql(const string file_outputName,const vector<string> attribute_dataType, const string tableName, bool const space){
 
     file.open(file_outputName,ios::app);
-
+        
     file<<">> CREATE TABLE "<< tableName << "("<< endl;
     cout<<">> CREATE TABLE "<< tableName << "("<< endl;
     for(int i=0; i<attribute_dataType.size(); i+=2){
@@ -788,6 +851,11 @@ void create_table_sql(const string file_outputName,const vector<string> attribut
     file<< "   );"<<endl;
     cout<< "   );"<<endl;
 
+    if(space){
+        file<<endl;
+        cout<<endl;
+    }
+    
     file.close();
    
 }
