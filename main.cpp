@@ -19,7 +19,7 @@ void f_insert(const string insert_into, const string cond_start,const string con
 int total_count(const vector<variant<string, vector<variant<int, string>>>>& table);
 void full_sql_command(const vector<string> word, const size_t i, string& sql_commad);
 string f_update(const string update_sql, const string cond_start,const string cond_end, const int num);
-vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute );
+vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute, const string fill );
 bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att, int& index, const bool update_sql,bool& can_change);
 void print_fileOutput(const string file_outputName, const string sql_commad="", const string comment="",const bool space=true);
 void create_table_sql(const string file_outputName,const vector<string> attribute_dataType, const string tableName, const bool sapce=false);
@@ -285,16 +285,6 @@ int main() {
                         insert_table = f_update(sql_commad,cond_start, cond_end, num);
                         trim(insert_table);
 
-                        // Obtain table name
-                        // for (char c : insert_into) {
-                        //     if (c != '(') { 
-                        //         insert_table += c;}
-
-                        //     else{break;}
-                        // }
-
-                        // cout<<"'"<<insert_table<<"'"<<endl;
-
                         // Check is the table created
                         if(insert_table == get<string>(table[0])){
 
@@ -308,11 +298,6 @@ int main() {
                             vector<string> unless;
                             f_insert(final_sql,cond_start, cond_end, num, insert_attr,unless);
 
-                            // for(size_t i=0; i<insert_attr.size(); i++){
-                            //     cout<< insert_attr[i]+ ",";
-                            // }
-                            // cout<<endl;
-
                             // Obtain values 
                             cond_start ="((";
                             cond_end =");";
@@ -320,62 +305,130 @@ int main() {
                             vector<string> value; 
                             vector<string> value_type;
                             f_insert(final_sql, cond_start, cond_end, num, value, value_type);
-
-                            // for(size_t i=0; i<value.size(); i++){
-                            //     cout<< value[i]+ ",";
-                            // }
-                            // cout<<endl;
                           
-                            vector<string> sorted_values = sort(insert_attr,value,attribute);
-                            vector<string> sorted_value_type = sort(insert_attr,value_type,attribute);
+                            bool att_val_equal=false;
+                            bool val_create_Att_equal = false;
 
-                            // Change the data type of value by following the data type given (CRETE TABLE).
-                            for(size_t j =0; j<dataType.size(); j++){
-                                
-                                if(dataType[j] == "int" && sorted_value_type[j] == "i"){
-                                    try{ daT_values.push_back(stoi(sorted_values[j]));}
+                            if (insert_attr.size() == value.size() ){
+                                att_val_equal = true;
+                            }
+
+                            if(value.size() <= attribute.size() && insert_attr.size() <= attribute.size()){
+                                val_create_Att_equal = true;
+                            }
+
+                            vector<string> sorted_values;
+                            vector<string> sorted_value_type;
+
+                            if(att_val_equal && val_create_Att_equal){
+
+                                sorted_values = sort(insert_attr,value,attribute,"-");
+                                sorted_value_type = sort(insert_attr,value_type,attribute,"fill");
+
+                                // if(attribute.size() != insert_attr.size()){
+                                //     dataType.resize(attribute.size(), dash);
+                                // }
+
+                                // for(size_t i = 0; i<sorted_values.size(); i++){
+                                //     cout<<"'"<<sorted_values[i]<<"'"<<endl;
+                                // }
+
+                                // for(size_t i = 0; i<sorted_value_type.size(); i++){
+                                //     cout<<"'"<<sorted_value_type[i]<<"'"<<endl;
+                                // }
+
+                                // Change the data type of value by following the data type given (CRETE TABLE).
+                                for(size_t j =0; j<dataType.size(); j++){
                                     
-                                    // When the values cannot change to int.
-                                    catch (const std::invalid_argument&){
-                                        comment="Error: \nValue \"" + sorted_values[j] + "\" from INSERT INTO sql is not a valid integer.";
+                                    if(sorted_value_type[j] == "fill"){
+                                        daT_values.push_back(sorted_values[j]);
+                                    }
+
+                                    else if(dataType[j] == "int" && sorted_value_type[j] == "i"){
+                                        try{ daT_values.push_back(stoi(sorted_values[j]));}
+                                        
+                                        // When the values cannot change to int.
+                                        catch (const std::invalid_argument&){
+                                            comment="Error: \nValue \"" + sorted_values[j] + "\" from INSERT INTO sql is not a valid integer.";
+                                            print_fileOutput(file_outputName,sql_commad,comment);
+                                            break; 
+                                        }
+                                    }
+
+                                    else if (dataType[j] == "string" && sorted_value_type[j] == "s"){
+                                        daT_values.push_back(sorted_values[j]);
+                                    }
+
+                                    else if (dataType[j] == "int" && sorted_value_type[j] == "s"){
+
+                                        comment= "Error: \nYour CREATE TABLE SQL sets the attribute's value (" 
+                                            + attribute[j] + ") to the INT data type. \n"
+                                            + "However, your INSERT INTO SQL sets \"" + sorted_values[j] + "\" to a TEXT data. \n"
+                                            + "Make sure \"" + sorted_values[j] + "\" does not contain quotation marks ('') and it is an integer.";
+
                                         print_fileOutput(file_outputName,sql_commad,comment);
                                         break; 
                                     }
+
+                                    else{
+                                        comment= "Error: \nYour CREATE TABLE SQL sets the attribute's value (" 
+                                            + attribute[j] + ") to the STRING data type. \n"
+                                            + "However, your INSERT INTO SQL sets \"" + sorted_values[j] + "\" to a INT data. \n"
+                                            + "Make sure \"" + sorted_values[j] + "\" do contain quotation marks ('').";
+
+                                        print_fileOutput(file_outputName,sql_commad,comment);
+                                        break; 
+                                        
+                                    }
                                 }
 
-                                else if (dataType[j] == "string" && sorted_value_type[j] == "s"){
-                                    daT_values.push_back(sorted_values[j]);
-                                }
+                                // for(size_t i = 0; i<sorted_values.size(); i++){
+                                //     cout<<"'"<<sorted_values[i]<<"'"<<endl;
+                                // }
 
-                                else if (dataType[j] == "int" && sorted_value_type[j] == "s"){
-
-                                    comment= "Error: \nYour CREATE TABLE SQL sets the attribute's value (" 
-                                         + attribute[j] + ") to the INT data type. \n"
-                                         + "However, your INSERT INTO SQL sets \"" + sorted_values[j] + "\" to a TEXT data. \n"
-                                         + "Make sure \"" + sorted_values[j] + "\" does not contain quotation marks ('') and it is an integer.";
-
-                                    print_fileOutput(file_outputName,sql_commad,comment);
-                                    break; 
-                                }
-
-                                else{
-                                    comment= "Error: \nYour CREATE TABLE SQL sets the attribute's value (" 
-                                        + attribute[j] + ") to the STRING data type. \n"
-                                        + "However, your INSERT INTO SQL sets \"" + sorted_values[j] + "\" to a INT data. \n"
-                                        + "Make sure \"" + sorted_values[j] + "\" do contain quotation marks ('').";
-
-                                    print_fileOutput(file_outputName,sql_commad,comment);
-                                    break; 
-                                    
+                                if(daT_values.size() == sorted_values.size()){
+                                    table.push_back(daT_values);
+                                    print_fileOutput(file_outputName,sql_commad);
                                 }
                             }
 
-                            if(daT_values.size()==sorted_values.size()){
-                                table.push_back(daT_values);
-                                print_fileOutput(file_outputName,sql_commad);
+                            else if(!att_val_equal && !val_create_Att_equal ){
+
+                                string comment = "Error:\nYour INSERT INTO SQL sets " 
+                                                + to_string(insert_attr.size()) + " attributes and "
+                                                + to_string(value.size()) + " values.\n"
+                                                + "Make sure the number of attributes and values is equal.\n"
+                                                + "Also, the number of attributes and values in INSERT INTO cannot exceed "
+                                                + to_string(attribute.size()) + ", which is the number of attributes defined in CREATE TABLE.";
+
+                                print_fileOutput(file_outputName,sql_commad,comment);
                             }
+
+                            else if(!att_val_equal){
+
+                                comment= "Error: \nYour INSERT INTO SQL sets " + to_string(insert_attr.size()) + " of attribute and "
+                                + to_string(value.size()) + " of value"
+                                + "Make sure attribute and value is equaly.";
+
+                                print_fileOutput(file_outputName,sql_commad,comment);
+                          
+
+                            }
+
+                            else if(!val_create_Att_equal){
+
+                                string comment = "Error: \nThe number of attributes and values in INSERT INTO cannot exceed "
+                                                + to_string(attribute.size()) + ", which is the number of attributes defined in CREATE TABLE.";
+
+                                print_fileOutput(file_outputName,sql_commad,comment);
+                                
+                            }
+
+                            // if(daT_values.size() == sorted_values.size()){
+                            //     table.push_back(daT_values);
+                            //     print_fileOutput(file_outputName,sql_commad);
+                            // }
                             daT_values.clear();
-                            // insert_into.clear();
                             
                             
                         }
@@ -407,6 +460,7 @@ int main() {
                         if(select_table == get<string>(table[0])){
                             print_fileOutput(file_outputName,sql_commad,"",false);
                             print_table(file_outputName,table,attribute);
+                            // cout<< table.size()<<" table size";
                         }
 
                         else{
@@ -453,9 +507,6 @@ int main() {
                         if(update_table == get<string>(table[0])){
 
                             final_sql = doubleSymbol(sql_commad, '=');
-                            cout << final_sql << endl;
-
-                            // cout << final_sql << endl;
 
                             repeat_equal_sign = false;
                         
@@ -465,7 +516,6 @@ int main() {
                             int num = 3;
                             string update_att = f_update(final_sql,cond_start, cond_end, num);
                             trim(update_att);
-                            cout<<"'"<<update_att<<"'"<<endl;
                           
                             // Obtain value 
                             cond_start ="=";
@@ -473,7 +523,6 @@ int main() {
                             num = 1;
                             auto update_att_value = f_update(final_sql,cond_start, cond_end, num);
                             trim(update_att_value);
-                            cout<<update_att_value<<endl;
 
                             // Obtain attribute 
                             cond_start ="WHERE";
@@ -481,7 +530,6 @@ int main() {
                             num = 5;
                             string update_where_att = f_update(final_sql,cond_start, cond_end, num);
                             trim(update_where_att);
-                            cout<<update_where_att<<endl;
 
                             // Obtain value 
                             cond_start ="==";
@@ -489,7 +537,6 @@ int main() {
                             num = 2;
                             auto update_where_val = f_update(final_sql,cond_start, cond_end, num);
                             trim(update_where_val);
-                            cout<<update_where_val<<endl;
 
                             final_sql.clear();
                            
@@ -601,13 +648,15 @@ int main() {
                             string cond_end ="=";
                             int num = 5;
                             string delete_att = f_update(sql_commad,cond_start, cond_end, num);
+                            trim(delete_att);
+
                         
                             cond_start ="=";
                             cond_end =";";
                             num = 1;
                             string delete_val = f_update(sql_commad,cond_start, cond_end, num);
+                            trim(delete_val);
                          
-                            // del.clear();
                             bool has_delete_att = find(attribute.begin(), attribute.end(), delete_att) != attribute.end();
 
                             if(has_delete_att){
@@ -698,6 +747,7 @@ int main() {
 // Function of printing the table
 void print_table(const string file_outputName, const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute ){
 
+    
     file.open(file_outputName,ios::app);
     
     for (const auto& row : table) {
@@ -708,8 +758,13 @@ void print_table(const string file_outputName, const vector<variant<string, vect
     }
 
     for(int i=0; i<attribute.size(); i++){
-        cout<< attribute[i]<< " ";
-        file<< attribute[i]<< " ";
+        cout<< attribute[i];
+        file<< attribute[i];
+
+        if(i != attribute.size()-1 ){
+            cout << ",";
+            file << ",";
+        }
     }
 
     cout << endl;
@@ -717,19 +772,30 @@ void print_table(const string file_outputName, const vector<variant<string, vect
 
     for (const auto& row : table) {
         if (holds_alternative<vector<variant<int, string>>>(row)) {
-            for (const auto& item : get<vector<variant<int, string>>>(row)) {
+            const auto& vec = get<vector<variant<int, string>>>(row);
+            
+            for (size_t i = 0; i < vec.size(); ++i) {
+                const auto& item = vec[i];
+    
                 if (holds_alternative<int>(item)) {
-                    cout << get<int>(item) << ",";
-                    file << get<int>(item) << ",";
+                    cout << get<int>(item);
+                    file  << get<int>(item);
                 } else if (holds_alternative<string>(item)) {
-                    cout << get<string>(item) << ",";
-                    file << get<string>(item) << ",";
+                    cout << get<string>(item);
+                    file << get<string>(item);
+                }
+    
+                if (i != vec.size() - 1) {
+                    cout << ",";
+                    file << ",";
                 }
             }
+    
             cout << endl;
             file << "\n";
         }
     }
+    
 
     cout << endl;
     file << "\n";
@@ -758,13 +824,11 @@ void f_insert(const string insert_into, const string cond_start,const string con
     // vector<string> insert_;  // Vector to store split values
     stringstream ss(insert);
     string token;
-    // vector<string> value_type;
 
     // Split string using ',' as the delimiter
     while (getline(ss, token, ',')) {
         trim (token);
         insert_.push_back(token);
-        // insert_.push_back(token);
     }
 
     for (string &s : insert_) {
@@ -789,37 +853,6 @@ int total_count(const vector<variant<string, vector<variant<int, string>>>>& tab
 
     return i;
 }
-
-// Function to get INSERT INTO, UPDATE full sql command start from the table name.
-// string full_sql_command(const vector<string> word, const size_t i, string& sql_commad){
-//     int j;
-//     bool s_condition= true;
-//     bool second= false;
-//     string sql;
-
-//     // Obtain INSERT INTO sql command
-//     for (j = i; j<word.size(); j++){
-//         if (s_condition == true){
-//             sql+=word[j];
-
-//             if (word[j].find(";") != string::npos) {
-//                 s_condition = false;
-//             }
-//         }
-//     }
-
-//     s_condition= true;
-//     for (j = i-2; j<word.size(); j++){
-//         if (s_condition == true){
-//             sql_commad+=word[j]+" ";
-
-//             if (word[j].find(";") != string::npos) {
-//                 s_condition = false;
-//             }
-//         }
-//     }
-//     return sql;
-// }
 
 void full_sql_command(const vector<string> word, const size_t i, string& sql_commad){
     int j;
@@ -857,9 +890,44 @@ string f_update(const string update_sql, const string cond_start,const string co
     return update;
 }
 
-vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute ){
+// vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute ){
+
+//     unordered_map<string, string> value_map;
+//     string dash = "-";
+//     // int ascii_dash = 45;
+
+//     for (size_t j = 0; j < insert_attr.size(); j++) {
+    
+//         value_map[insert_attr[j]] = value[j];
+//     }
+
+//     vector<std::string> sorted_values;
+//     for (const auto& key : attribute) {
+//         sorted_values.push_back(value_map[key]);
+//     }
+
+//     return sorted_values;
+// }
+
+vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute, const string fill ){
 
     unordered_map<string, string> value_map;
+    // string dash = "-";
+    // int ascii_dash = 45;
+
+    if (attribute.size() != insert_attr.size()) {
+        value.resize(attribute.size(), fill);
+       
+
+        for (const auto& item : attribute) {
+            // 如果 item 不在 b 里，就加进去
+            if (find(insert_attr.begin(), insert_attr.end(), item) == insert_attr.end()) {
+                insert_attr.push_back(item);
+            }
+        }
+    }
+    
+
     for (size_t j = 0; j < insert_attr.size(); j++) {
         value_map[insert_attr[j]] = value[j];
     }

@@ -5,13 +5,10 @@ CREATE TABLE student(
     name TEXT,
     address TEXT
 );
-    
-INSERT INTO student (name,id,address) VALUES('wei shanz', 1 , 'Kuala Lumpur');  
-INSERT INTO student(id,address,name) VALUES (2, 'kulai', 'xin yi');       
-INSERT INTO student(name,id,address) VALUES ('shi xian', 3 , 'melaka');   
 
-UPDATE student SET name = rui xin WHERE address = Kuala Lumpur;         
-
+INSERT INTO student(name, id) VALUES ('Alibu' , 4);   
+INSERT INTO student(address) VALUES ('kulai');   
+SELECT* FROM student; 
 
 
 

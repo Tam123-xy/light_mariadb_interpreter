@@ -19,6 +19,9 @@ CREATE TABLE second(    // recreate
     address TEXT
 );
 
+INSERT INTO student(id,name,address,state) VALUES ( 1 );                 // attribute or value(from insert into) more than the attribute(from create table) AND attribute(from insert into) is not equal to value(from insert into)
+INSERT INTO student(id,name,address) VALUES ( 1 );                       // attribute(from insert into) is not equal to value(from insert into)
+INSERT INTO student(id,name,address,state) VALUES ( 1,2,3,4 );           // attribute or value(from insert into) more than the attribute(from create table)
 INSERT INTO student(name,id,address) VALUES ('xinyi', '1' , 'kulai');     // wrong value data type, cannot '1' the variable id is integer type
 INSERT INTO student(name,id,address) VALUES ('xinyi', abc , 'kulai');     // wrong value data type, abc is not int
 INSERT INTO student(name,id,address) VALUES (xinyi, 1 , 'kulai');         // wrong value data type, xinyi supposed to be 'xinyi'
@@ -27,6 +30,7 @@ INSERT INTO student(name,id,address) VALUES ('tommy', abc , 'dream');     // abc
 INSERT INTO student(name,id,address) VALUES ('weishanz', 1 , 'pinang');   // safe
 INSERT INTO student(id,address,name) VALUES (2, 'kulai', 'xinyi');        // safe
 INSERT INTO student(name,id,address) VALUES ('shixian', 3 , 'melaka');    // safe
+INSERT INTO student(name, id) VALUES ('Alibu' , 4);                          
 
 SELECT* FROM student;    // safe
 SELECT* FROM second;     // no table
