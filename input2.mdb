@@ -1,0 +1,25 @@
+CREATE fileOutput.txt;   
+
+CREATE TABLE student(  
+    id INT,
+    name TEXT,
+    address TEXT
+);
+    
+INSERT INTO student(name,id,address) VALUES ('wei shanz', 1 , 'penang');   
+INSERT INTO student(id,address,name) VALUES (2, 'kulai', 'xin yi');       
+INSERT INTO student(name,id,address) VALUES ('shi xian', 3 , 'melaka');   
+SELECT* FROM student; 
+SELECT COUNT(*) FROM student; 
+
+UPDATE student SET address = Kuala Lumpur WHERE id=1;                   
+UPDATE student SET name=rui xin WHERE address = Kuala Lumpur; 
+SELECT* FROM student; 
+
+DELETE FROM student WHERE id=2; 
+SELECT* FROM student; 
+SELECT COUNT(*) FROM student; 
+
+
+
+

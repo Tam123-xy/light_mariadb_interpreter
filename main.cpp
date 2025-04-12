@@ -14,16 +14,16 @@ ofstream file;
 using InnerVector = vector<variant<int, string>>;
 
 // Function prototypes
-void print_table(const string file_outputName,const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute);
+void print_table(const string &file_outputName,const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string>& attribute);
 void f_insert(const string insert_into, const string cond_start,const string cond_end, const int num, vector<string>& insert_, vector<string>& value_type);
 int total_count(const vector<variant<string, vector<variant<int, string>>>>& table);
-void full_sql_command(const vector<string> word, const size_t i, string& sql_commad);
-string f_update(const string update_sql, const string cond_start,const string cond_end, const int num);
-vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute, const string fill );
-bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att, int& index, const bool update_sql,bool& can_change);
-void print_fileOutput(const string file_outputName, const string sql_commad="", const string comment="",const bool space=true);
-void create_table_sql(const string file_outputName,const vector<string> attribute_dataType, const string tableName, const bool sapce=false);
-string doubleSymbol(const string sql, char const symbol );
+void full_sql_command(const vector<string>& word, const size_t& i, string& sql_commad);
+string f_update(const string& update_sql, const string& cond_start,const string& cond_end, const int& num);
+vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute, const string& fill );
+bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att, int& index, const bool& update_sql,bool& can_change);
+void print_fileOutput(const string& file_outputName, const string& sql_commad="", const string& comment="",const bool& space=true);
+void create_table_sql(const string &file_outputName,const vector<string> &attribute_dataType, const string &tableName, const bool &sapce=false);
+string doubleSymbol(const string &sql,const char& symbol );
 void trim(string& str);
 
 
@@ -41,9 +41,9 @@ int main() {
     int j;
     bool create_table= true;
     bool datatype= false;
-    bool insert = true;
-    string tableName, file_outputName, type, insert_value,insert_table,select_table,count_table, update_table ;
-    string insert_into, update, del;
+    // bool insert = true;
+    string tableName, file_outputName, type,insert_table,select_table,count_table, update_table ;
+    // string insert_into, update, del;
     bool repeat_equal_sign = false;
     string final_sql;
     int int_val,int_where_val;
@@ -94,14 +94,14 @@ int main() {
                     tableName = "";
                     file_outputName = "";
                     type = "";
-                    insert_value = "";
+                    // insert_value = "";
                     insert_table = "";
                     select_table = "";
                     count_table = "";
                     update_table = "";
-                    insert_into = "";
-                    update = "";
-                    del = "";
+                    // insert_into = "";
+                    // update = "";
+                    // del = "";
                     final_sql = "";
                     delete_table_name = "";
                     sql_commad = "";
@@ -115,11 +115,14 @@ int main() {
                     // Reset booleans
                     create_table = true;
                     datatype = false;
-                    insert = true;
+                    // insert = true;
                     repeat_equal_sign = false;
                     delete_same_value = false;
                     create_fileOutput = false;
                     print = false;
+
+                    comment = "From "+ inputfileName;
+                    cout << comment <<endl;
 
                 // Loop the file line and put in variable line
                 while (std::getline(dataIn, line)){
@@ -156,15 +159,15 @@ int main() {
                                 if (c != ';') { 
                                     file_outputName += c;}}
 
-                            // ofstream file(file_outputName, ios::app);
-                            ofstream file(file_outputName);
-                      
+                            ofstream file(file_outputName, ios::app);
+                            
+                            comment = "From "+ inputfileName;
+                            file << comment <<endl;
+
                             create_fileOutput=true;
 
                             sql_commad.clear();
                             sql_commad = "CREATE "+file_outputName+";";
-
-                            print_fileOutput(file_outputName,"","From "+ inputfileName);
                             print_fileOutput(file_outputName,sql_commad);
 
                         }
@@ -325,18 +328,6 @@ int main() {
                                 sorted_values = sort(insert_attr,value,attribute,"-");
                                 sorted_value_type = sort(insert_attr,value_type,attribute,"fill");
 
-                                // if(attribute.size() != insert_attr.size()){
-                                //     dataType.resize(attribute.size(), dash);
-                                // }
-
-                                // for(size_t i = 0; i<sorted_values.size(); i++){
-                                //     cout<<"'"<<sorted_values[i]<<"'"<<endl;
-                                // }
-
-                                // for(size_t i = 0; i<sorted_value_type.size(); i++){
-                                //     cout<<"'"<<sorted_value_type[i]<<"'"<<endl;
-                                // }
-
                                 // Change the data type of value by following the data type given (CRETE TABLE).
                                 for(size_t j =0; j<dataType.size(); j++){
                                     
@@ -382,10 +373,6 @@ int main() {
                                     }
                                 }
 
-                                // for(size_t i = 0; i<sorted_values.size(); i++){
-                                //     cout<<"'"<<sorted_values[i]<<"'"<<endl;
-                                // }
-
                                 if(daT_values.size() == sorted_values.size()){
                                     table.push_back(daT_values);
                                     print_fileOutput(file_outputName,sql_commad);
@@ -424,10 +411,6 @@ int main() {
                                 
                             }
 
-                            // if(daT_values.size() == sorted_values.size()){
-                            //     table.push_back(daT_values);
-                            //     print_fileOutput(file_outputName,sql_commad);
-                            // }
                             daT_values.clear();
                             
                             
@@ -727,25 +710,21 @@ int main() {
                         }
 
                     }
-
-                    
                 }
             }
         }
 
         if(!create_fileOutput){
-            comment = "It is better to create a file to print the output. Hence you can see the output in terminal and in file.";
+            comment = "It is better to create a file to print the output for "+ inputfileName +"\nHence you can see the output in terminal and in file.";
             print_fileOutput(file_outputName,"",comment);
         }
-        
-
     }
     return 0;
 
 }
 
 // Function of printing the table
-void print_table(const string file_outputName, const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute ){
+void print_table(const string& file_outputName, const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string>& attribute ){
 
     
     file.open(file_outputName,ios::app);
@@ -854,7 +833,7 @@ int total_count(const vector<variant<string, vector<variant<int, string>>>>& tab
     return i;
 }
 
-void full_sql_command(const vector<string> word, const size_t i, string& sql_commad){
+void full_sql_command(const vector<string>& word, const size_t& i, string& sql_commad){
     int j;
     bool s_condition= true;
     bool second= false;
@@ -875,7 +854,7 @@ void full_sql_command(const vector<string> word, const size_t i, string& sql_com
 }
 
 // Function of finding attributes and the values from the UPDATE sql command.
-string f_update(const string update_sql, const string cond_start,const string cond_end, const int num){
+string f_update(const string& update_sql, const string& cond_start,const string& cond_end, const int& num){
 
     size_t start = update_sql.find(cond_start) + num;
     size_t end = update_sql.find(cond_end);
@@ -890,30 +869,10 @@ string f_update(const string update_sql, const string cond_start,const string co
     return update;
 }
 
-// vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute ){
 
-//     unordered_map<string, string> value_map;
-//     string dash = "-";
-//     // int ascii_dash = 45;
-
-//     for (size_t j = 0; j < insert_attr.size(); j++) {
-    
-//         value_map[insert_attr[j]] = value[j];
-//     }
-
-//     vector<std::string> sorted_values;
-//     for (const auto& key : attribute) {
-//         sorted_values.push_back(value_map[key]);
-//     }
-
-//     return sorted_values;
-// }
-
-vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute, const string fill ){
+vector<string> sort(vector<string> insert_attr, vector<string> value,vector<string> attribute, const string& fill ){
 
     unordered_map<string, string> value_map;
-    // string dash = "-";
-    // int ascii_dash = 45;
 
     if (attribute.size() != insert_attr.size()) {
         value.resize(attribute.size(), fill);
@@ -940,7 +899,7 @@ vector<string> sort(vector<string> insert_attr,vector<string> value,vector<strin
     return sorted_values;
 }
 
-bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att, int& index, const bool update_sql, bool& can_change) {
+bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att, int& index, const bool& update_sql, bool& can_change) {
 
     // Find the index of update_att in attribute
     auto it = find(attribute.begin(), attribute.end(), update_att);
@@ -973,9 +932,8 @@ bool update_change_dataTYPE(const vector<string>& attribute, const vector<string
     return false;
 }
 
-void print_fileOutput(const string file_outputName, const string sql_commad,const string comment, const bool space){
-
-    
+void print_fileOutput(const string& file_outputName, const string& sql_commad,const string& comment, const bool& space){
+   
     file.open(file_outputName,ios::app);
 
     if(!sql_commad.empty() && !comment.empty()){
@@ -1005,7 +963,7 @@ void print_fileOutput(const string file_outputName, const string sql_commad,cons
     }
 
                       
-void create_table_sql(const string file_outputName,const vector<string> attribute_dataType, const string tableName, bool const space){
+void create_table_sql(const string &file_outputName,const vector<string> &attribute_dataType, const string &tableName, bool const &space){
 
     file.open(file_outputName,ios::app);
         
@@ -1027,7 +985,7 @@ void create_table_sql(const string file_outputName,const vector<string> attribut
    
 }
 
-string doubleSymbol(const string sql, char symbol) {
+string doubleSymbol(const string& sql, const char& symbol) {
     string final_sql;
     bool first_found = false;
 

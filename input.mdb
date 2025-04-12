@@ -9,7 +9,4 @@ CREATE TABLE student(
 INSERT INTO student(name, id) VALUES ('Alibu' , 4);   
 INSERT INTO student(address) VALUES ('kulai');   
 SELECT* FROM student; 
-
-
-
-
+SELECT COUNT(*) FROM student; 
