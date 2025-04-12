@@ -1,0 +1,53 @@
+CREATE fileOutput.txt;    //safe
+CREATE fileOutput2.txt;  // recreate 
+
+CREATE TABLE student(   // wrong data type
+    id abc,
+    name TEXT,
+    address TEXT
+);
+
+CREATE TABLE student(    //safe
+    id INT,
+    name TEXT,
+    address TEXT
+);
+
+CREATE TABLE second(    // recreate
+    id INT,
+    name TEXT,
+    address TEXT
+);
+
+INSERT INTO student(name,id,address) VALUES ('xinyi', '1' , 'kulai');     // wrong value data type, cannot '1' the variable id is integer type
+INSERT INTO student(name,id,address) VALUES ('xinyi', abc , 'kulai');     // wrong value data type, abc is not int
+INSERT INTO student(name,id,address) VALUES (xinyi, 1 , 'kulai');         // wrong value data type, xinyi supposed to be 'xinyi'
+INSERT INTO second(name,id,address) VALUES ('xinyi', 1 , 'kulai');        // no table
+INSERT INTO student(name,id,address) VALUES ('tommy', abc , 'dream');     // abc is not int, bsc cannot transfer to int
+INSERT INTO student(name,id,address) VALUES ('weishanz', 1 , 'pinang');   // safe
+INSERT INTO student(id,address,name) VALUES (2, 'kulai', 'xinyi');        // safe
+INSERT INTO student(name,id,address) VALUES ('shixian', 3 , 'melaka');    // safe
+
+SELECT* FROM student;    // safe
+SELECT* FROM second;     // no table
+
+SELECT COUNT(*) FROM student;    // safe
+SELECT COUNT(*) FROM second;     // no table
+
+UPDATE student SET name = ruixin WHERE id=2;                    // safe
+UPDATE student SET address = muar WHERE name=ruixin;            // safe, ''is no important
+UPDATE second SET name = weishanz WHERE id=1;                   // no table
+UPDATE student SET class = weishanz WHERE id=1;                 // no set att
+UPDATE student SET name = weishanz WHERE clas=kulai;            // no where att
+UPDATE student SET class = weishanz WHERE state=kulai;          // no set and where att
+UPDATE student SET name = shixian WHERE id=3;                   // no same where value
+
+DELETE FROM student WHERE id=1;             // safe
+DELETE FROM second WHERE id=1;              // no table
+DELETE FROM student WHERE class=1;          // no where att
+DELETE FROM student WHERE id=4;             // no same where value
+
+
+
+
+

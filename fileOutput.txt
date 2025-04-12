@@ -1,118 +1,18 @@
+From input.mdb
+
 >> CREATE fileOutput.txt;
 
->> CREATE fileOutput2.txt;
-Error: 
-You only can create a file output in a file input. You have already created fileOutput.txt
-
->> CREATE TABLE student(
-     id abc,
-     name TEXT,
-     address TEXT
-   );
-Error: 
-Unsupport data type of abc . We only support INT and TEXT data type.
-
 >> CREATE TABLE student(
      id INT,
      name TEXT,
      address TEXT
    );
 
->> CREATE TABLE second(
-     id INT,
-     name TEXT,
-     address TEXT
-   );
-Error: 
-You only can create one table. You have created student table.
+>> INSERT INTO student (name,id,address) VALUES('wei shanz', 1 , 'Kuala Lumpur'); 
 
->> INSERT INTO student(name,id,address) VALUES ('xinyi', '1' , 'kulai'); 
-Error: 
-Your CREATE TABLE SQL sets the attribute's value (id) to the INT data type. 
-However, your INSERT INTO SQL sets "1" to a TEXT data. 
-Make sure "1" does not contain quotation marks ('') and it is an integer.
+>> INSERT INTO student(id,address,name) VALUES (2, 'kulai', 'xin yi'); 
 
->> INSERT INTO student(name,id,address) VALUES ('xinyi', abc , 'kulai'); 
-Error: 
-Value "abc" from INSERT INTO sql is not a valid integer.
+>> INSERT INTO student(name,id,address) VALUES ('shi xian', 3 , 'melaka'); 
 
->> INSERT INTO student(name,id,address) VALUES (xinyi, 1 , 'kulai'); 
-Error: 
-Your CREATE TABLE SQL sets the attribute's value (name) to the STRING data type. 
-However, your INSERT INTO SQL sets "xinyi" to a INT data. 
-Make sure "xinyi" do contain quotation marks ('').
-
->> INSERT INTO student(name,id,address) VALUES ('xinyi', 1 , 'kulai'); 
-
->> INSERT INTO second(name,id,address) VALUES ('xinyi', 1 , 'kulai'); 
-Error: 
-second table doesn't exit.
-
->> SELECT* FROM student
-TABLE student
-id name address 
-1 xinyi kulai 
-
->> SELECT* FROM second
-Error: 
-second table doesn't exit.
-
->> SELECT COUNT(*) FROM student
-Total row of data from table student is 1.
-
->> SELECT COUNT(*) FROM second
-Error:
-second table doesn't exit.
-
->> INSERT INTO student(id,address,name) VALUES (1, 'kulai', xinyi); 
-Error: 
-Your CREATE TABLE SQL sets the attribute's value (name) to the STRING data type. 
-However, your INSERT INTO SQL sets "xinyi" to a INT data. 
-Make sure "xinyi" do contain quotation marks ('').
-
->> INSERT INTO student(name,id,address) VALUES (tommy, 2 , dream); 
-Error: 
-Your CREATE TABLE SQL sets the attribute's value (name) to the STRING data type. 
-However, your INSERT INTO SQL sets "tommy" to a INT data. 
-Make sure "tommy" do contain quotation marks ('').
-
->> INSERT INTO student(name,id,address) VALUES ('tommy', abc , 'dream'); 
-Error: 
-Value "abc" from INSERT INTO sql is not a valid integer.
-
->> UPDATE student SET name = weishanz WHERE id=1; 
-
->> UPDATE second SET name = weishanz WHERE id=1; 
-Error:
-second table doesn't exit.
-
->> UPDATE student SET class = weishanz WHERE id=1; 
-Error:
-SET Attribute "class" is not found in the attribute list.
-
->> UPDATE student SET name = weishanz WHERE clas=kulai; 
-Error:
-WHERE Attribute "clas" is not found in the attribute list.
-
->> UPDATE student SET class = weishanz WHERE state=kulai; 
-Error:
-SET Attribute "class" and WHERE Attribute "state" are not found in the attribute list.
-
->> UPDATE student SET name = shixian WHERE id=3; 
-Error:
-"3" is no founded in attribute "id".
-
->> DELETE FROM student WHERE id=1; 
-
->> DELETE FROM second WHERE id=1; 
-Error:
-second table doesn't exit.
-
->> DELETE FROM student WHERE class=1; 
-Error:
-Attribute "class" not found in the attribute list.
-
->> DELETE FROM student WHERE id=4; 
-Error:
-Value "4" is no founded in attribute "id" .
+>> UPDATE student SET name = rui xin WHERE address = Kuala Lumpur; 
 

@@ -17,12 +17,14 @@ using InnerVector = vector<variant<int, string>>;
 void print_table(const string file_outputName,const vector<variant<string, vector<variant<int, string>>>>& table, const vector<string> attribute);
 void f_insert(const string insert_into, const string cond_start,const string cond_end, const int num, vector<string>& insert_, vector<string>& value_type);
 int total_count(const vector<variant<string, vector<variant<int, string>>>>& table);
-string full_sql_command(const vector<string> word, const size_t i, string& sql_commad);
+void full_sql_command(const vector<string> word, const size_t i, string& sql_commad);
 string f_update(const string update_sql, const string cond_start,const string cond_end, const int num);
 vector<string> sort(vector<string> insert_attr,vector<string> value,vector<string> attribute );
 bool update_change_dataTYPE(const vector<string>& attribute, const vector<string>& dataType, const string& value, const string& update_att, int& index, const bool update_sql,bool& can_change);
 void print_fileOutput(const string file_outputName, const string sql_commad="", const string comment="",const bool space=true);
 void create_table_sql(const string file_outputName,const vector<string> attribute_dataType, const string tableName, const bool sapce=false);
+string doubleSymbol(const string sql, char const symbol );
+void trim(string& str);
 
 
 int main() {
@@ -51,6 +53,7 @@ int main() {
     bool create_fileOutput=false;
     string sql_commad;
     bool print;
+    string inputfileName;
    
     // Detect file mdb 
     for (const auto& entry : fs::directory_iterator(path)) {
@@ -65,16 +68,58 @@ int main() {
     }
 
     else{
-        
         // Loop each file
         for (size_t i = 0; i < inputfiles.size(); ++i) {
             ifstream dataIn(inputfiles[i]);
+
+            inputfileName.clear();
+            inputfileName = inputfiles[i];
 
             // Check file is empty
             if (dataIn.peek() == ifstream::traits_type::eof()) {
                 cout << inputfiles[i] << " is empty!" << endl;}
 
             else {
+                    table.clear();
+                    daT_values.clear();
+                    words.clear();
+                    word.clear();
+                    attribute_dataType.clear();
+                    attribute.clear();
+                    dataType.clear();
+
+                    // Reset strings
+                    line = "";
+                    comment = "";
+                    tableName = "";
+                    file_outputName = "";
+                    type = "";
+                    insert_value = "";
+                    insert_table = "";
+                    select_table = "";
+                    count_table = "";
+                    update_table = "";
+                    insert_into = "";
+                    update = "";
+                    del = "";
+                    final_sql = "";
+                    delete_table_name = "";
+                    sql_commad = "";
+
+                    // Reset integers
+                    j = 0;
+                    int_val = 0;
+                    int_where_val = 0;
+                    r = 0;
+
+                    // Reset booleans
+                    create_table = true;
+                    datatype = false;
+                    insert = true;
+                    repeat_equal_sign = false;
+                    delete_same_value = false;
+                    create_fileOutput = false;
+                    print = false;
 
                 // Loop the file line and put in variable line
                 while (std::getline(dataIn, line)){
@@ -104,18 +149,24 @@ int main() {
                 for (int i=0; i < word.size(); i++){
                     // Handle CREATE
                     if (word[i] == "CREATE"){
-
                         // Create file output
+
                         if (word[i+1].find(".txt;")!= string::npos && !create_fileOutput){
                             for (char c : word[i+1]) {
                                 if (c != ';') { 
                                     file_outputName += c;}}
+
+                            // ofstream file(file_outputName, ios::app);
                             ofstream file(file_outputName);
+                      
                             create_fileOutput=true;
 
                             sql_commad.clear();
                             sql_commad = "CREATE "+file_outputName+";";
+
+                            print_fileOutput(file_outputName,"","From "+ inputfileName);
                             print_fileOutput(file_outputName,sql_commad);
+
                         }
 
                         else if(word[i+1].find(".txt;")!= string::npos && create_fileOutput){
@@ -176,7 +227,7 @@ int main() {
                                             }
 
                                             create_table_sql(file_outputName,attribute_dataType,tableName);
-                                            comment = "Error: \nUnsupport data type of "+ unsupport+ " . We only support INT and TEXT data type.";
+                                            comment = "Error: \nUnsupport data type of "+ unsupport+ ". We only support INT and TEXT data type.";
                                             print_fileOutput(file_outputName,"",comment);
                                             print=false;
                                             attribute.clear();
@@ -226,18 +277,28 @@ int main() {
 
                         // Obtain INSERT INTO sql command
                         sql_commad.clear();
-                        insert_into = full_sql_command(word,i+2,sql_commad);
+                        full_sql_command(word,i+2,sql_commad);
+
+                        string cond_start ="INSERT INTO";
+                        string cond_end ="(";
+                        int num = 11;
+                        insert_table = f_update(sql_commad,cond_start, cond_end, num);
+                        trim(insert_table);
 
                         // Obtain table name
-                        for (char c : insert_into) {
-                            if (c != '(') { 
-                                insert_table += c;}
+                        // for (char c : insert_into) {
+                        //     if (c != '(') { 
+                        //         insert_table += c;}
 
-                            else{break;}
-                        }
+                        //     else{break;}
+                        // }
+
+                        // cout<<"'"<<insert_table<<"'"<<endl;
 
                         // Check is the table created
                         if(insert_table == get<string>(table[0])){
+
+                            string final_sql = doubleSymbol(sql_commad, '(');
 
                             // Obtain attributes 
                             string cond_start ="(";
@@ -245,15 +306,25 @@ int main() {
                             int num = 1;
                             vector<string> insert_attr; 
                             vector<string> unless;
-                            f_insert(insert_into,cond_start, cond_end, num, insert_attr,unless);
+                            f_insert(final_sql,cond_start, cond_end, num, insert_attr,unless);
+
+                            // for(size_t i=0; i<insert_attr.size(); i++){
+                            //     cout<< insert_attr[i]+ ",";
+                            // }
+                            // cout<<endl;
 
                             // Obtain values 
-                            cond_start ="VALUES(";
+                            cond_start ="((";
                             cond_end =");";
-                            num = 7;
+                            num = 2;
                             vector<string> value; 
                             vector<string> value_type;
-                            f_insert(insert_into,cond_start, cond_end, num, value, value_type);
+                            f_insert(final_sql, cond_start, cond_end, num, value, value_type);
+
+                            // for(size_t i=0; i<value.size(); i++){
+                            //     cout<< value[i]+ ",";
+                            // }
+                            // cout<<endl;
                           
                             vector<string> sorted_values = sort(insert_attr,value,attribute);
                             vector<string> sorted_value_type = sort(insert_attr,value_type,attribute);
@@ -304,7 +375,7 @@ int main() {
                                 print_fileOutput(file_outputName,sql_commad);
                             }
                             daT_values.clear();
-                            insert_into.clear();
+                            // insert_into.clear();
                             
                             
                         }
@@ -376,54 +447,49 @@ int main() {
                         update_table = word[i+1];
 
                         sql_commad.clear();
-                        update = full_sql_command(word,i+2,sql_commad);
+                        full_sql_command(word,i+2,sql_commad);
 
                         // Check is the table created
                         if(update_table == get<string>(table[0])){
 
-                            for (size_t j = 0; j < update.size(); j++) {
+                            final_sql = doubleSymbol(sql_commad, '=');
+                            cout << final_sql << endl;
 
-                                if (update[j] == '=') {
-                                    final_sql += repeat_equal_sign ? "==" : "=";
-                                    repeat_equal_sign = true;
-                                }
-
-                                else if (update[j] == ';'){
-                                    final_sql += update[j];
-                                    break;
-                                }
-                                
-                                else {
-                                    final_sql += update[j];
-                                }
-                            }
+                            // cout << final_sql << endl;
 
                             repeat_equal_sign = false;
-                            // cout << final_sql << endl;
                         
                             // Obtain attribute
                             string cond_start ="SET";
                             string cond_end ="=";
                             int num = 3;
                             string update_att = f_update(final_sql,cond_start, cond_end, num);
+                            trim(update_att);
+                            cout<<"'"<<update_att<<"'"<<endl;
                           
                             // Obtain value 
                             cond_start ="=";
                             cond_end ="WHERE";
                             num = 1;
                             auto update_att_value = f_update(final_sql,cond_start, cond_end, num);
+                            trim(update_att_value);
+                            cout<<update_att_value<<endl;
 
                             // Obtain attribute 
                             cond_start ="WHERE";
                             cond_end ="==";
                             num = 5;
                             string update_where_att = f_update(final_sql,cond_start, cond_end, num);
+                            trim(update_where_att);
+                            cout<<update_where_att<<endl;
 
                             // Obtain value 
                             cond_start ="==";
                             cond_end =";";
                             num = 2;
                             auto update_where_val = f_update(final_sql,cond_start, cond_end, num);
+                            trim(update_where_val);
+                            cout<<update_where_val<<endl;
 
                             final_sql.clear();
                            
@@ -526,7 +592,7 @@ int main() {
                         delete_table_name = word[i+2];
 
                         sql_commad.clear();
-                        del = full_sql_command(word,i+2,sql_commad);
+                        full_sql_command(word,i+2,sql_commad);
 
 
                         if(delete_table_name == get<string>(table[0])){
@@ -534,14 +600,14 @@ int main() {
                             string cond_start ="WHERE";
                             string cond_end ="=";
                             int num = 5;
-                            string delete_att = f_update(del,cond_start, cond_end, num);
+                            string delete_att = f_update(sql_commad,cond_start, cond_end, num);
                         
                             cond_start ="=";
                             cond_end =";";
                             num = 1;
-                            string delete_val = f_update(del,cond_start, cond_end, num);
+                            string delete_val = f_update(sql_commad,cond_start, cond_end, num);
                          
-                            del.clear();
+                            // del.clear();
                             bool has_delete_att = find(attribute.begin(), attribute.end(), delete_att) != attribute.end();
 
                             if(has_delete_att){
@@ -653,11 +719,11 @@ void print_table(const string file_outputName, const vector<variant<string, vect
         if (holds_alternative<vector<variant<int, string>>>(row)) {
             for (const auto& item : get<vector<variant<int, string>>>(row)) {
                 if (holds_alternative<int>(item)) {
-                    cout << get<int>(item) << " ";
-                    file << get<int>(item) << " ";
+                    cout << get<int>(item) << ",";
+                    file << get<int>(item) << ",";
                 } else if (holds_alternative<string>(item)) {
-                    cout << get<string>(item) << " ";
-                    file << get<string>(item) << " ";
+                    cout << get<string>(item) << ",";
+                    file << get<string>(item) << ",";
                 }
             }
             cout << endl;
@@ -669,6 +735,17 @@ void print_table(const string file_outputName, const vector<variant<string, vect
     file << "\n";
     file.close();
 }
+
+void trim(string& str) {
+    size_t first = str.find_first_not_of(' ');
+    size_t last = str.find_last_not_of(' ');
+    if (first == string::npos) {
+        str = ""; // all spaces
+        return;
+    }
+    str = str.substr(first, last - first + 1);
+}
+
 
 // Function of finding attributes and the values from the INSERT INTO sql command.
 void f_insert(const string insert_into, const string cond_start,const string cond_end, const int num, vector<string>& insert_, vector<string>& value_type){
@@ -685,7 +762,9 @@ void f_insert(const string insert_into, const string cond_start,const string con
 
     // Split string using ',' as the delimiter
     while (getline(ss, token, ',')) {
+        trim (token);
         insert_.push_back(token);
+        // insert_.push_back(token);
     }
 
     for (string &s : insert_) {
@@ -712,23 +791,43 @@ int total_count(const vector<variant<string, vector<variant<int, string>>>>& tab
 }
 
 // Function to get INSERT INTO, UPDATE full sql command start from the table name.
-string full_sql_command(const vector<string> word, const size_t i, string& sql_commad){
+// string full_sql_command(const vector<string> word, const size_t i, string& sql_commad){
+//     int j;
+//     bool s_condition= true;
+//     bool second= false;
+//     string sql;
+
+//     // Obtain INSERT INTO sql command
+//     for (j = i; j<word.size(); j++){
+//         if (s_condition == true){
+//             sql+=word[j];
+
+//             if (word[j].find(";") != string::npos) {
+//                 s_condition = false;
+//             }
+//         }
+//     }
+
+//     s_condition= true;
+//     for (j = i-2; j<word.size(); j++){
+//         if (s_condition == true){
+//             sql_commad+=word[j]+" ";
+
+//             if (word[j].find(";") != string::npos) {
+//                 s_condition = false;
+//             }
+//         }
+//     }
+//     return sql;
+// }
+
+void full_sql_command(const vector<string> word, const size_t i, string& sql_commad){
     int j;
     bool s_condition= true;
     bool second= false;
-    string sql;
+    
 
     // Obtain INSERT INTO sql command
-    for (j = i; j<word.size(); j++){
-        if (s_condition == true){
-            sql+=word[j];
-
-            if (word[j].find(";") != string::npos) {
-                s_condition = false;
-            }
-        }
-    }
-
     s_condition= true;
     for (j = i-2; j<word.size(); j++){
         if (s_condition == true){
@@ -739,7 +838,7 @@ string full_sql_command(const vector<string> word, const size_t i, string& sql_c
             }
         }
     }
-    return sql;
+    
 }
 
 // Function of finding attributes and the values from the UPDATE sql command.
@@ -860,3 +959,26 @@ void create_table_sql(const string file_outputName,const vector<string> attribut
    
 }
 
+string doubleSymbol(const string sql, char symbol) {
+    string final_sql;
+    bool first_found = false;
+
+    for (size_t j = 0; j < sql.size(); j++) {
+        if (sql[j] == symbol) {
+            if (first_found) {
+                final_sql += symbol;
+                final_sql += symbol; // duplicate
+            } else {
+                final_sql += symbol;
+                first_found = true;
+            }
+        } else if (sql[j] == ';') {
+            final_sql += sql[j];
+            break;
+        } else {
+            final_sql += sql[j];
+        }
+    }
+
+    return final_sql;
+}
