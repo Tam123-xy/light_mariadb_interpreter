@@ -30,7 +30,7 @@ INSERT INTO student(name,id,address) VALUES ('tommy', abc , 'dream');     // abc
 INSERT INTO student(name,id,address) VALUES ('weishanz', 1 , 'pinang');   // safe
 INSERT INTO student(id,address,name) VALUES (2, 'kulai', 'xinyi');        // safe
 INSERT INTO student(name,id,address) VALUES ('shixian', 3 , 'melaka');    // safe
-INSERT INTO student(name, id) VALUES ('Alibu' , 4);                          
+INSERT INTO student(name, id) VALUES ('Alibu' , 4);                       // safe   
 
 SELECT* FROM student;    // safe
 SELECT* FROM second;     // no table
